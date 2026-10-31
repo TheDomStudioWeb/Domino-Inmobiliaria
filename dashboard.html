@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DOMino Inmobiliaria · Panel</title>
+<meta name="theme-color" content="#0A0A0A">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="imagenes/favicon-64.png">
+<link rel="apple-touch-icon" href="imagenes/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="page">
+    <div><h2>DOMino</h2><small>Inmobiliaria</small></div>
+    <a class="avatar" href="index.html" aria-label="Salir (agente demostración)">AG</a>
+  </div>
+</header>
+
+<main class="page">
+  <div class="kpis" aria-label="Resumen">
+    <div class="kpi"><b id="k1">0</b><span>En gestión</span></div>
+    <div class="kpi"><b id="k2">0</b><span>Leads</span></div>
+    <div class="kpi"><b id="k3">0</b><span>Captaciones nuevas</span></div>
+  </div>
+
+  <h3 class="sec" id="propiedades">En gestión activa</h3>
+  <div class="carousel" id="props" tabindex="0" aria-label="Propiedades en gestión"></div>
+
+  <h3 class="sec" id="leads">Nuevos leads · por contactar</h3>
+  <div class="leads" id="lista"></div>
+
+  <button class="reset" id="reset" type="button">Restablecer datos de ejemplo</button>
+  <p class="foot">Demostración: los avisos de WhatsApp llegan al estudio que desarrolló la app.<br>Desarrollado por <a href="https://thedomstudioweb.github.io/" target="_blank" rel="noopener">The DOM Studio Web</a> · WhatsApp 261-3431216 · thedomstudioweb@gmail.com</p>
+</main>
+
+<nav class="bottom" aria-label="Principal">
+  <div class="in">
+    <a class="tab on" href="#propiedades">Propiedades</a>
+    <label class="cam" for="foto" aria-label="Captar una propiedad con la cámara">
+      <svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4zM12 17a3.5 3.5 0 100-7 3.5 3.5 0 000 7z"/></svg>
+    </label>
+    <input class="sr" type="file" id="foto" accept="image/*" capture="environment">
+    <a class="tab" href="#leads">Leads</a>
+  </div>
+</nav>
+
+<script src="app.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var WAI = '<svg viewBox="0 0 24 24"><path d="M4 20l1.3-4.2A8 8 0 1 1 8.4 18.7z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-.8.8c-.9-.4-1.6-1.1-2-2l.8-.8-1-2z"/></svg>';
+
+  function pintar() {
+    var d = DI.load(), nuevas = 0;
+    var box = $('props'); box.innerHTML = '';
+    d.props.forEach(function (p) {
+      if (String(p.id).charAt(0) === 'n') nuevas++;
+      var c = document.createElement('article'); c.className = 'card';
+      var im = document.createElement('div'); im.className = 'img'; im.setAttribute('role', 'img'); im.setAttribute('aria-label', p.titulo);
+      if (p.img) im.style.backgroundImage = 'url("' + p.img.replace(/"/g, '%22') + '")';
+      var b = document.createElement('div'); b.className = 'body';
+      b.innerHTML = '<h3>' + DI.esc(p.titulo) + '</h3><span class="chip">' + DI.esc(p.estado) + '</span>';
+      var a = document.createElement('a'); a.className = 'btn ok'; a.target = '_blank'; a.rel = 'noopener';
+      a.href = DI.wa('Hola, te escribo desde DOMino Inmobiliaria. Reporte de tu propiedad «' + p.titulo + '»: ' + p.estado + '. ¡Seguimos avanzando!');
+      a.innerHTML = WAI + 'Notificar al propietario';
+      b.appendChild(a); c.appendChild(im); c.appendChild(b); box.appendChild(c);
+    });
+    if (!d.props.length) box.innerHTML = '<p class="empty" style="flex:1">Todavía no hay propiedades. Toque la cámara para captar la primera.</p>';
+
+    var l = $('lista'); l.innerHTML = '';
+    d.leads.forEach(function (x) {
+      var r = document.createElement('div'); r.className = 'lead';
+      r.innerHTML = '<div><h4>' + DI.esc(x.nombre) + '</h4><p>' + DI.esc(x.detalle) + '</p></div>';
+      var a = document.createElement('a'); a.className = 'btn line sm'; a.target = '_blank'; a.rel = 'noopener';
+      a.href = DI.wa('Hola ' + x.nombre + ', te escribo desde DOMino Inmobiliaria por tu consulta: ' + x.detalle + '.');
+      a.textContent = 'Contactar'; r.appendChild(a); l.appendChild(r);
+    });
+    if (!d.leads.length) l.innerHTML = '<p class="empty">No hay leads pendientes.</p>';
+
+    $('k1').textContent = d.props.length; $('k2').textContent = d.leads.length; $('k3').textContent = nuevas;
+  }
+
+  // Cámara: se toma la foto, se reduce y se pasa a la pantalla de captación (antes la foto se perdía en el salto).
+  $('foto').addEventListener('change', function () {
+    var f = this.files && this.files[0]; if (!f) return;
+    DI.reducir(f).then(function (url) { try { sessionStorage.setItem('domino_foto', url); } catch (e) {} location.href = 'captura.html'; })
+      .catch(function () { location.href = 'captura.html'; });
+  });
+  $('reset').addEventListener('click', function () { DI.reset(); pintar(); });
+  pintar();
+})();
+</script>
+</body>
+</html>
