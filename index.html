@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DOMino Inmobiliaria · Demostración</title>
+<meta name="description" content="DOMino Inmobiliaria: sitio de captación de propiedades y consultas para inmobiliarias. Versión de demostración con datos de ejemplo.">
+<meta name="theme-color" content="#0A0A0A">
+<link rel="icon" type="image/png" href="imagenes/favicon-64.png">
+<link rel="apple-touch-icon" href="imagenes/icono-512.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Kit de marca The DOM Studio Web: Premium-Noir. Dorado como único color de marca, sin degradados en la interfaz. */
+:root{
+  --bg:#0A0A0A; --panel:#16181C; --panel-2:#101215; --tx:#F4F1EA; --mut:#B9B4A8; --dim:#8E897E;
+  --gold:#D4AF37; --gold-hi:#E8C766; --bronze:#9E7535; --line:#2E2A1E; --line-2:#262626; --ok:#4CC38A; --er:#FF6B61;
+  --serif:'Cinzel',Georgia,serif; --sans:'Montserrat',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --gut:max(16px,env(safe-area-inset-left,0px));
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;color-scheme:dark;scroll-padding-top:84px}
+body{background:var(--bg);color:var(--tx);font:400 16px/1.65 var(--sans);-webkit-text-size-adjust:100%;overflow-x:hidden}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--gold-hi);outline-offset:3px}
+.wrap{width:100%;max-width:1160px;margin:0 auto;padding-inline:max(20px,env(safe-area-inset-left,0px)) max(20px,env(safe-area-inset-right,0px))}
+.eyebrow{font:600 .75rem/1 var(--sans);letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
+h1,h2,h3{font-family:var(--serif);font-weight:600;letter-spacing:.01em;text-wrap:balance}
+
+/* Botones */
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 26px;border:1px solid var(--gold);border-radius:3px;font:600 .8rem/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:background .2s,color .2s,transform .2s}
+.btn-gold{background:var(--gold);color:#0A0A0A}
+.btn-gold:hover{background:var(--gold-hi);transform:translateY(-2px)}
+.btn-line{background:transparent;color:var(--gold)}
+.btn-line:hover{background:var(--gold);color:#0A0A0A}
+.btn-block{display:flex;width:100%}
+
+/* Encabezado */
+header{position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px solid var(--line-2);padding-top:env(safe-area-inset-top,0px)}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:72px}
+.brand{display:flex;flex-direction:column;line-height:1}
+.brand b{font:600 1.35rem/1 var(--serif);letter-spacing:.12em;color:var(--gold);text-transform:uppercase}
+.brand small{font:500 .62rem/1 var(--sans);letter-spacing:.3em;text-transform:uppercase;color:var(--mut);margin-top:7px}
+nav ul{display:flex;gap:30px;list-style:none}
+nav a{font:500 .82rem/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--mut);padding:8px 0;border-bottom:1px solid transparent;transition:color .2s,border-color .2s}
+nav a:hover{color:var(--gold);border-color:var(--gold)}
+.bar .btn{min-height:42px;padding:0 18px;font-size:.72rem}
+
+/* Portada */
+.hero{position:relative;min-height:calc(100svh - 72px);display:flex;align-items:center;background:#0A0A0A url('imagenes/hero.webp') center/cover no-repeat;isolation:isolate}
+.hero::before{content:"";position:absolute;inset:0;background:rgba(10,10,10,.72);z-index:-1}
+.hero .wrap{padding-block:80px}
+.hero h1{font-size:clamp(2rem,5.2vw,3.7rem);line-height:1.12;max-width:15em;margin:18px 0 22px}
+.hero h1 em{font-style:normal;color:var(--gold)}
+.hero p.lead{max-width:36em;color:#DAD5C8;font-size:1.08rem;margin-bottom:34px}
+.hero .cta{display:flex;flex-wrap:wrap;gap:12px}
+.tag-demo{display:inline-block;margin-top:34px;padding:7px 14px;border:1px solid var(--line);background:rgba(10,10,10,.65);font:500 .74rem/1.4 var(--sans);letter-spacing:.08em;color:var(--mut)}
+
+/* Captación */
+.valuation{background:var(--panel-2);border-block:1px solid var(--line);padding:96px 0}
+.val-grid{display:grid;grid-template-columns:1.05fr 1fr;gap:64px;align-items:center}
+.val-grid h2{font-size:clamp(1.7rem,3.6vw,2.6rem);line-height:1.2;margin:14px 0 20px}
+.val-grid p{color:var(--mut);margin-bottom:26px}
+.checks{list-style:none;display:grid;gap:12px}
+.checks li{display:flex;gap:12px;color:#DAD5C8}
+.checks li::before{content:"";flex:none;width:18px;height:18px;margin-top:4px;border:1px solid var(--gold);background:var(--gold) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18'%3E%3Cpath d='M4.5 9.5l3 3 6-7' fill='none' stroke='%230A0A0A' stroke-width='2'/%3E%3C/svg%3E") center/100% no-repeat;border-radius:2px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:34px}
+.card h3{font-size:1.15rem;color:var(--gold);margin-bottom:22px}
+.field{display:grid;gap:7px;margin-bottom:16px}
+.field label{font:500 .74rem/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+.field input,.field select{width:100%;min-height:50px;padding:0 14px;background:var(--bg);color:var(--tx);border:1px solid #3a372c;border-radius:3px;font:inherit;font-size:1rem}
+.field input::placeholder{color:#6f6b60}
+.field input:focus,.field select:focus{border-color:var(--gold);outline:none;box-shadow:0 0 0 3px rgba(212,175,55,.22)}
+.field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%23D4AF37' stroke-width='2'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;padding-right:40px}
+.msg{min-height:1.4em;margin-top:14px;font-size:.88rem;color:var(--mut)}
+.msg.er{color:var(--er)} .msg.ok{color:var(--ok)}
+.fine{margin-top:10px;font-size:.78rem;color:var(--dim)}
+
+/* Cómo trabajamos */
+.steps{padding:96px 0}
+.sec-head{text-align:center;margin-bottom:56px}
+.sec-head h2{font-size:clamp(1.7rem,3.6vw,2.5rem);margin-top:14px}
+.step-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.step{padding:30px;border:1px solid var(--line-2);border-radius:4px;background:var(--panel-2)}
+.step .n{font:600 2.2rem/1 var(--serif);color:var(--gold);margin-bottom:14px}
+.step h3{font-size:1.05rem;margin-bottom:10px}
+.step p{color:var(--mut);font-size:.95rem}
+
+/* Vitrina */
+.showcase{padding:96px 0;background:var(--panel-2);border-block:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:28px}
+.prop{background:var(--panel);border:1px solid var(--line);border-radius:4px;overflow:hidden;display:flex;flex-direction:column;transition:transform .25s,border-color .25s}
+.prop:hover{transform:translateY(-5px);border-color:var(--gold)}
+.prop .img{position:relative;aspect-ratio:3/2;background-size:cover;background-position:center}
+.prop .ej{position:absolute;top:12px;left:12px;padding:5px 10px;background:rgba(10,10,10,.82);border:1px solid var(--gold);font:600 .65rem/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--gold)}
+.prop .body{padding:24px;display:flex;flex-direction:column;gap:12px;flex:1}
+.price{font:600 1.5rem/1 var(--serif);color:var(--gold)}
+.prop h3{font-size:1.02rem;line-height:1.35;font-family:var(--sans);font-weight:600;letter-spacing:0}
+.zone{font-size:.85rem;color:var(--mut)}
+.feat{display:flex;flex-wrap:wrap;gap:8px 18px;padding:14px 0;margin-block:auto 4px;border-block:1px solid var(--line-2);color:var(--mut);font-size:.88rem}
+.feat span{display:inline-flex;align-items:center;gap:7px}
+.feat svg{width:16px;height:16px;stroke:var(--gold);fill:none;stroke-width:1.6;flex:none}
+.note-img{margin-top:26px;text-align:center;font-size:.8rem;color:var(--dim)}
+
+/* Responsables y portal */
+.legal{padding:64px 0;border-bottom:1px solid var(--line-2)}
+.legal .row{display:grid;grid-template-columns:1.2fr 1fr 1.2fr;gap:40px;align-items:center}
+.legal h4{font:600 .75rem/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:14px}
+.legal .nm{font-weight:600;font-size:1.05rem}
+.legal .sm{color:var(--mut);font-size:.88rem;margin-top:4px}
+.legal .mid{text-align:center}
+.legal .end{text-align:right}
+
+/* Pie */
+footer{padding:48px 0 calc(40px + env(safe-area-inset-bottom,0px))}
+.sign{display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.sign .l{font-size:.8rem;color:var(--dim)}
+.dom{display:flex;align-items:center;gap:14px;min-width:0}
+.dom img{width:52px;height:52px;flex:none}
+.dom p{font-size:.78rem;color:var(--mut);line-height:1.5}
+.dom a{color:var(--gold)}
+.dom a:hover{color:var(--gold-hi)}
+.dom .fr{font-family:var(--serif);letter-spacing:.06em;color:var(--tx)}
+
+@media (max-width:900px){
+  .val-grid{grid-template-columns:1fr;gap:40px}
+  .step-grid{grid-template-columns:1fr}
+  .legal .row{grid-template-columns:1fr;gap:28px}
+  .legal .mid,.legal .end{text-align:left}
+  .valuation,.steps,.showcase{padding:64px 0}
+  nav{order:3;flex-basis:100%}
+  .bar{flex-wrap:wrap;gap:0 16px;padding-top:12px}
+  .bar .btn{margin-left:auto}
+  nav ul{gap:22px;overflow-x:auto;padding:12px 0 14px;scrollbar-width:none}
+  nav ul::-webkit-scrollbar{display:none}
+  nav a{white-space:nowrap}
+  .hero{min-height:auto}
+  .hero .wrap{padding-block:64px}
+  .card{padding:24px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="#inicio" aria-label="Inicio">
+      <b>Su Inmobiliaria</b>
+      <small>DOMino Inmobiliaria</small>
+    </a>
+    <nav aria-label="Principal">
+      <ul>
+        <li><a href="#comprar">Comprar</a></li>
+        <li><a href="#vender">Vender</a></li>
+        <li><a href="#inversiones">Invertir</a></li>
+        <li><a href="#equipo">Equipo</a></li>
+      </ul>
+    </nav>
+    <a class="btn btn-line" href="#vender">Consultar</a>
+  </div>
+</header>
+
+<main id="inicio">
+
+  <!-- Portada -->
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">Compra · Venta · Inversión</span>
+      <h1>El inmueble correcto, <em>para la persona correcta.</em></h1>
+      <p class="lead">No somos un catálogo de propiedades: acompañamos cada operación, desde la primera consulta hasta la escritura, con atención clara y seguimiento de punta a punta.</p>
+      <div class="cta">
+        <a href="#comprar" class="btn btn-gold">Quiero comprar</a>
+        <a href="#vender" class="btn btn-line">Quiero vender</a>
+        <a href="#inversiones" class="btn btn-line">Busco invertir</a>
+      </div>
+      <span class="tag-demo">Versión de demostración · todos los datos son de ejemplo</span>
+    </div>
+  </section>
+
+  <!-- Captación de propiedades -->
+  <section id="vender" class="valuation">
+    <div class="wrap val-grid">
+      <div>
+        <span class="eyebrow">Para propietarios</span>
+        <h2>No ponga un cartel.<br>Diseñe una estrategia.</h2>
+        <p>Un precio mal calculado quema la propiedad. Analizamos operaciones recientes de su zona para fijar un valor realista y llegar a los compradores indicados.</p>
+        <ul class="checks">
+          <li>Valuación fundamentada en datos de la zona.</li>
+          <li>Difusión en portales, redes y base de interesados.</li>
+          <li>Asesoramiento legal y notarial durante toda la operación.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Solicitar valuación gratuita</h3>
+        <form id="form-val" novalidate>
+          <div class="field"><label for="f-nom">Nombre completo</label><input id="f-nom" name="nombre" type="text" autocomplete="name" placeholder="Nombre y apellido" required></div>
+          <div class="field"><label for="f-tipo">Tipo de inmueble</label>
+            <select id="f-tipo" name="tipo" required>
+              <option value="">Seleccione…</option><option>Casa</option><option>Departamento</option><option>Lote / terreno</option><option>Local u oficina</option>
+            </select></div>
+          <div class="field"><label for="f-zona">Zona</label><input id="f-zona" name="zona" type="text" placeholder="Ej.: Chacras de Coria" required></div>
+          <div class="field"><label for="f-tel">Teléfono de contacto</label><input id="f-tel" name="tel" type="tel" inputmode="tel" autocomplete="tel" placeholder="Con característica" required></div>
+          <button class="btn btn-gold btn-block" type="submit">Analizar mi propiedad</button>
+          <p class="msg" id="msg" role="status" aria-live="polite"></p>
+          <p class="fine">Al enviar se abre WhatsApp con su consulta lista. En esta demostración llega al estudio que desarrolló el sitio.</p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cómo trabajamos -->
+  <section id="inversiones" class="steps">
+    <div class="wrap">
+      <div class="sec-head"><span class="eyebrow">Cómo trabajamos</span><h2>Tres pasos, sin sorpresas</h2></div>
+      <div class="step-grid">
+        <div class="step"><div class="n">01</div><h3>Análisis</h3><p>Relevamos la propiedad o el perfil de inversión y lo comparamos con el mercado real de la zona.</p></div>
+        <div class="step"><div class="n">02</div><h3>Estrategia</h3><p>Definimos precio, difusión y tiempos. Cada interesado queda registrado y con seguimiento.</p></div>
+        <div class="step"><div class="n">03</div><h3>Cierre</h3><p>Coordinamos visitas, documentación y firma, con información clara para propietarios e inquilinos.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Vitrina -->
+  <section id="comprar" class="showcase">
+    <div class="wrap">
+      <div class="sec-head"><span class="eyebrow">Oportunidades</span><h2>Propiedades destacadas</h2></div>
+      <div class="grid">
+
+        <article class="prop">
+          <div class="img" role="img" aria-label="Chalet moderno con pileta (imagen ilustrativa)" style="background-image:url('imagenes/propiedad-1.webp')"><span class="ej">Ejemplo</span></div>
+          <div class="body">
+            <div class="price">USD 245.000</div>
+            <h3>Chalet moderno con pileta</h3>
+            <div class="zone">Chacras de Coria</div>
+            <div class="feat">
+              <span><svg viewBox="0 0 24 24"><path d="M3 18v-7a2 2 0 012-2h14a2 2 0 012 2v7M3 15h18M6 9V6h5v3"/></svg>3 dorm.</span>
+              <span><svg viewBox="0 0 24 24"><path d="M4 12h16v3a4 4 0 01-4 4H8a4 4 0 01-4-4zM6 12V6a2 2 0 014 0"/></svg>2 baños</span>
+              <span><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM4 9h5M15 4v5"/></svg>450 m²</span>
+            </div>
+            <a class="btn btn-line btn-block" data-wa="Chalet moderno con pileta (USD 245.000)" href="#">Consultar por WhatsApp</a>
+          </div>
+        </article>
+
+        <article class="prop">
+          <div class="img" role="img" aria-label="Dúplex con pileta y terraza (imagen ilustrativa)" style="background-image:url('imagenes/propiedad-2.webp')"><span class="ej">Ejemplo</span></div>
+          <div class="body">
+            <div class="price">USD 110.000</div>
+            <h3>Dúplex con terraza</h3>
+            <div class="zone">Quinta Sección</div>
+            <div class="feat">
+              <span><svg viewBox="0 0 24 24"><path d="M3 18v-7a2 2 0 012-2h14a2 2 0 012 2v7M3 15h18M6 9V6h5v3"/></svg>2 dorm.</span>
+              <span><svg viewBox="0 0 24 24"><path d="M4 12h16v3a4 4 0 01-4 4H8a4 4 0 01-4-4zM6 12V6a2 2 0 014 0"/></svg>1 baño</span>
+              <span><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM4 9h5M15 4v5"/></svg>120 m²</span>
+            </div>
+            <a class="btn btn-line btn-block" data-wa="Dúplex con terraza (USD 110.000)" href="#">Consultar por WhatsApp</a>
+          </div>
+        </article>
+
+        <article class="prop">
+          <div class="img" role="img" aria-label="Lote en barrio privado, vista aérea (imagen ilustrativa)" style="background-image:url('imagenes/propiedad-3.webp')"><span class="ej">Ejemplo</span></div>
+          <div class="body">
+            <div class="price">USD 85.000</div>
+            <h3>Lote en barrio privado</h3>
+            <div class="zone">Luján de Cuyo</div>
+            <div class="feat">
+              <span><svg viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11.5A7 7 0 005 9.5C5 14.8 12 21 12 21zM12 12a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"/></svg>Excelente ubicación</span>
+              <span><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM4 9h5M15 4v5"/></svg>800 m²</span>
+            </div>
+            <a class="btn btn-line btn-block" data-wa="Lote en barrio privado (USD 85.000)" href="#">Consultar por WhatsApp</a>
+          </div>
+        </article>
+
+      </div>
+      <p class="note-img">Imágenes ilustrativas. Propiedades, precios y superficies de ejemplo.</p>
+    </div>
+  </section>
+
+  <!-- Responsables y portal -->
+  <section id="equipo" class="legal">
+    <div class="wrap row">
+      <div>
+        <h4>Corredor responsable</h4>
+        <p class="nm">Nombre y Apellido</p>
+        <p class="sm">Matrícula N.º 0000 · Colegio profesional</p>
+        <p class="sm">Razón social de la inmobiliaria</p>
+      </div>
+      <div class="mid">
+        <h4>Portal de gestión</h4>
+        <a class="btn btn-line" href="https://dominowpa.netlify.app" target="_blank" rel="noopener">Acceso agentes</a>
+      </div>
+      <div class="end">
+        <h4>Contacto</h4>
+        <p class="nm">Calle Ejemplo 123, Mendoza</p>
+        <p class="sm">Teléfono: (0261) 000 0000</p>
+        <p class="sm">contacto@suinmobiliaria.example</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap sign">
+    <div class="l">© 2026 Su Inmobiliaria · Sitio de demostración, sin operaciones reales.</div>
+    <div class="dom">
+      <img src="imagenes/medallon-192.webp" alt="The DOM Studio Web" width="52" height="52">
+      <p><span class="fr">Estructura y potencia digital</span><br>Desarrollado por <a href="https://thedomstudioweb.github.io/" target="_blank" rel="noopener">The DOM Studio Web</a> · WhatsApp 261-3431216 · thedomstudioweb@gmail.com</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  // Número del estudio, para que la demostración reciba las consultas. Cada inmobiliaria pone el suyo al personalizar el sitio.
+  var WA = '5492613431216';
+  var abrir = function(txt){ window.open('https://wa.me/' + WA + '?text=' + encodeURIComponent(txt), '_blank', 'noopener'); };
+
+  // Botones "Consultar por WhatsApp" de cada propiedad
+  document.querySelectorAll('[data-wa]').forEach(function(a){
+    a.addEventListener('click', function(e){
+      e.preventDefault();
+      abrir('Hola, vi esta propiedad en la demostración de DOMino Inmobiliaria y quiero más información: ' + a.getAttribute('data-wa') + '.');
+    });
+  });
+
+  // Formulario de valuación: valida y arma el mensaje de WhatsApp
+  var f = document.getElementById('form-val'), msg = document.getElementById('msg');
+  f.addEventListener('submit', function(e){
+    e.preventDefault();
+    var v = function(id){ return (document.getElementById(id).value || '').trim(); };
+    var nom = v('f-nom'), tipo = v('f-tipo'), zona = v('f-zona'), tel = v('f-tel');
+    msg.className = 'msg';
+    if (nom.length < 3 || !tipo || zona.length < 2) { msg.className = 'msg er'; msg.textContent = 'Complete su nombre, el tipo de inmueble y la zona.'; return; }
+    if (tel.replace(/\D/g, '').length < 8) { msg.className = 'msg er'; msg.textContent = 'Ingrese un teléfono válido, con característica.'; return; }
+    abrir('Hola, quiero solicitar una valuación (demostración DOMino Inmobiliaria).\n' +
+          'Nombre: ' + nom + '\nTipo de inmueble: ' + tipo + '\nZona: ' + zona + '\nTeléfono: ' + tel);
+    msg.className = 'msg ok';
+    msg.textContent = 'Listo. Se abrió WhatsApp con su consulta: solo falta enviarla.';
+  });
+})();
+</script>
+</body>
+</html>
