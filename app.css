@@ -109,3 +109,5 @@ button.avatar{border:0;cursor:pointer}
 .tabla .fila{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 0;border-top:1px solid #2a2820}
 .tabla .fila:first-child{border-top:0}.tabla small{display:block;color:var(--mut)}
 [hidden]{display:none!important}
+
+select.mini{width:100%;min-height:42px;margin:0 0 10px;padding:0 10px;background:var(--panel-2);color:var(--tx);border:1px solid #3a372c;border-radius:4px;font:inherit;font-size:.85rem}

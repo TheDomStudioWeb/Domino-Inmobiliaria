@@ -22,7 +22,7 @@ En `/sitio/`: tasación online (arma un mensaje de WhatsApp), pasos, propiedades
 Se entrega con su marca, su WhatsApp, datos propios por centro, ingreso real de agentes y prueba de 1 semana. Consultas: The DOM Studio Web · WhatsApp 261-3431216 · thedomstudioweb@gmail.com
 
 ## Equipo y prueba
-- La Dirección da de alta a su equipo desde «Gestionar el equipo» (al pie del panel): nombre, correo y contraseña temporal. Hay dos niveles: Agente (capta y hace seguimiento) y Dirección (además gestiona el equipo).
+- La Dirección da de alta a su equipo desde «Gestionar el equipo» (al pie del panel): nombre, correo y contraseña temporal. Hay tres niveles: Dirección (ve todo, reasigna propiedades y gestiona el equipo), Corredor (ve y gestiona lo que capta o se le asigna, y puede cerrar operaciones) y Gestor (capta y hace seguimiento de lo suyo; no puede dar por cerrada una operación). Cada persona ve su propio panel («Mis propiedades»); la Dirección puede filtrar por persona.
 - Cada inmobiliaria tiene 1 semana de prueba desde el primer ingreso de su Dirección; el panel muestra «Prueba hasta…».
 - «Registrar consulta» (panel) carga un lead con su WhatsApp; «Contactar» abre el chat. En cada propiedad se puede anotar el propietario y su WhatsApp, y «Notificar al propietario» le abre el chat con el reporte armado.
 - Los datos de una inmobiliaria nunca se ven desde otra.

@@ -43,18 +43,33 @@ service cloud.firestore {
         allow write: if seniorDe(nid);
       }
 
-      // Propiedades captadas. El equipo las gestiona; la foto va reducida dentro del documento (tope de tamaño).
+      // (Las lecturas comparan los campos directamente: así Firestore puede validar las consultas «mis propiedades».)
+      // Niveles: senior = Dirección (ve y gestiona todo), semisenior = Corredor, asistente = Gestor.
+      // Corredor y Gestor ven solo lo que captaron o se les asignó; la Dirección ve y reasigna todo.
+      // El Gestor no puede dar por cerrada una operación (eso lo hace un Corredor o la Dirección).
+      // Propiedades captadas. La foto va reducida dentro del documento (tope de tamaño).
       match /props/{id} {
-        allow read: if personalDe(nid);
-        allow create, update: if personalDe(nid)
+        allow read: if seniorDe(nid) || (personalDe(nid) && (resource.data.creado_por == mail() || resource.data.asignado == mail()));
+        allow create: if personalDe(nid)
           && request.resource.data.get('img', '').size() < 450000
-          && request.resource.data.titulo is string && request.resource.data.titulo.size() > 0 && request.resource.data.titulo.size() < 200;
+          && request.resource.data.titulo is string && request.resource.data.titulo.size() > 0 && request.resource.data.titulo.size() < 200
+          && request.resource.data.get('creado_por', '') == mail()
+          && (seniorDe(nid) || request.resource.data.get('asignado', '') == mail());
+        allow update: if (seniorDe(nid) || (personalDe(nid)
+              && (resource.data.get('creado_por', '') == mail() || resource.data.get('asignado', '') == mail())
+              && request.resource.data.get('creado_por', '') == resource.data.get('creado_por', '')
+              && request.resource.data.get('asignado', '') == resource.data.get('asignado', '')
+              && !(perfilDe().rol_jerarquia == 'asistente' && request.resource.data.get('estado', '').matches('Cerrada.*'))))
+          && request.resource.data.get('img', '').size() < 450000;
         allow delete: if seniorDe(nid);
       }
 
-      // Consultas de personas interesadas.
+      // Consultas de personas interesadas: mismo criterio de visibilidad.
       match /leads/{id} {
-        allow read, write: if personalDe(nid);
+        allow read: if seniorDe(nid) || (personalDe(nid) && (resource.data.creado_por == mail() || resource.data.asignado == mail()));
+        allow create: if personalDe(nid) && request.resource.data.get('creado_por', '') == mail()
+          && (seniorDe(nid) || request.resource.data.get('asignado', '') == mail());
+        allow update, delete: if seniorDe(nid) || (personalDe(nid) && (resource.data.get('creado_por', '') == mail() || resource.data.get('asignado', '') == mail()));
       }
     }
 

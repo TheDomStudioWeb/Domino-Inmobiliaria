@@ -33,6 +33,7 @@
   </div>
 
   <h3 class="sec" id="propiedades">En gestión activa</h3>
+  <div class="field" id="filtro-box" hidden><label for="filtro">Ver</label><select id="filtro"><option value="">Todo el equipo</option></select></div>
   <div class="carousel" id="props" tabindex="0" aria-label="Propiedades en gestión"></div>
 
   <h3 class="sec" id="leads">Nuevos leads · por contactar</h3>
@@ -76,6 +77,9 @@ async function pintar() {
   let props = [], leads = [];
   try { [props, leads] = await Promise.all([ctx.props(), ctx.leads()]); }
   catch (e) { $('aviso').hidden = false; $('aviso').className = 'msg er'; $('aviso').textContent = 'No se pudieron leer los datos (' + (e.code || e.message) + '). Revise la conexión.'; }
+  const nombres = {}; (ctx.personas || []).forEach(u => nombres[u.email] = u.nombre);
+  const f = $('filtro').value;
+  if (f) { props = props.filter(p => p.asignado === f); leads = leads.filter(x => x.asignado === f); }
   const box = $('props'); box.innerHTML = ''; let nuevas = 0;
   props.forEach(p => {
     if (String(p.estado || '').indexOf('Nueva') === 0) nuevas++;
@@ -83,7 +87,20 @@ async function pintar() {
     const im = document.createElement('div'); im.className = 'img'; im.setAttribute('role', 'img'); im.setAttribute('aria-label', p.titulo);
     if (p.img) im.style.backgroundImage = 'url("' + p.img.replace(/"/g, '%22') + '")';
     const b = document.createElement('div'); b.className = 'body';
-    b.innerHTML = '<h3>' + DI.esc(p.titulo) + '</h3><span class="chip">' + DI.esc(p.estado) + '</span>' + (p.propietario ? '<p class="meta">Propietario: ' + DI.esc(p.propietario) + '</p>' : '');
+    b.innerHTML = '<h3>' + DI.esc(p.titulo) + '</h3><span class="chip">' + DI.esc(p.estado) + '</span>' + (p.propietario ? '<p class="meta">Propietario: ' + DI.esc(p.propietario) + '</p>' : '') + (ctx.esSenior && p.asignado && nombres[p.asignado] ? '<p class="meta">A cargo de: ' + DI.esc(nombres[p.asignado]) + '</p>' : '');
+    // Cambiar el estado de la operación. El Gestor no puede darla por cerrada.
+    const sel = document.createElement('select'); sel.className = 'mini'; sel.setAttribute('aria-label', 'Estado de la operación');
+    const est = DI.ESTADOS.filter(e => !(ctx.rol === 'asistente' && e === 'Cerrada'));
+    const base = String(p.estado || '').split(' · ')[0];
+    sel.innerHTML = '<option value="">Cambiar estado…</option>' + est.map(e => '<option' + (e === base ? ' disabled' : '') + '>' + e + '</option>').join('');
+    sel.onchange = async () => { if (!sel.value) return; try { await ctx.actualizarProp(p.id, { estado: sel.value + (p.operacion ? ' · ' + p.operacion : '') }); pintar(); } catch (err) { alert('No se pudo cambiar (' + (err.code || err.message) + ').'); } };
+    if (!(ctx.rol === 'asistente' && base === 'Cerrada')) b.appendChild(sel);
+    if (ctx.esSenior && ctx.personas && ctx.personas.length > 1) {
+      const as = document.createElement('select'); as.className = 'mini'; as.setAttribute('aria-label', 'Reasignar a');
+      as.innerHTML = '<option value="">Reasignar a…</option>' + ctx.personas.filter(u => u.email !== p.asignado).map(u => '<option value="' + DI.esc(u.email) + '">' + DI.esc(u.nombre) + '</option>').join('');
+      as.onchange = async () => { if (!as.value) return; try { await ctx.actualizarProp(p.id, { asignado: as.value }); pintar(); } catch (err) { alert('No se pudo reasignar (' + (err.code || err.message) + ').'); } };
+      b.appendChild(as);
+    }
     const a = document.createElement('a'); a.className = 'btn ok'; a.target = '_blank'; a.rel = 'noopener';
     a.href = DI.wa('Hola' + (p.propietario ? ' ' + p.propietario : '') + ', te escribo desde ' + (ctx.demo ? 'DOMino Inmobiliaria' : ctx.nombre) + '. Reporte de tu propiedad «' + p.titulo + '»: ' + p.estado + '. ¡Seguimos avanzando!', ctx.demo ? undefined : (p.propietario_tel || ''));
     a.innerHTML = WAI + 'Notificar al propietario';
@@ -105,8 +122,10 @@ async function pintar() {
 
 (async () => {
   ctx = await iniciar(); if (!ctx) return;
+  if (ctx.esSenior) { try { ctx.personas = await ctx.equipo(); } catch (e) { ctx.personas = []; } if (ctx.personas.length > 1) { $('filtro').insertAdjacentHTML('beforeend', ctx.personas.map(u => '<option value="' + DI.esc(u.email) + '">' + DI.esc(u.nombre) + ' · ' + (DI.ROLES[u.rol] || '') + '</option>').join('')); $('filtro-box').hidden = false; $('filtro').onchange = pintar; } }
   $('salir').textContent = ctx.iniciales; $('salir').title = 'Salir';
-  document.querySelector('.top small').textContent = ctx.demo ? 'Inmobiliaria · demostración' : ctx.nombre;
+  document.querySelector('.top small').textContent = ctx.demo ? 'Inmobiliaria · demostración' : ctx.nombre + ' · ' + (DI.ROLES[ctx.rol] || '');
+  if (!ctx.esSenior && !ctx.demo) { $('propiedades').textContent = 'Mis propiedades'; $('leads').textContent = 'Mis consultas · por contactar'; }
   if (ctx.vence) { const d = Math.max(0, Math.ceil((ctx.vence - Date.now()) / 86400000)); const a = $('aviso'); a.hidden = false; a.className = 'msg'; a.textContent = 'Prueba hasta el ' + new Date(ctx.vence).toLocaleDateString('es-AR') + ' (' + d + (d === 1 ? ' día' : ' días') + ').'; }
   if (ctx.demo) $('reset').hidden = false;
   if (ctx.esSenior) $('equipo-link').hidden = false;

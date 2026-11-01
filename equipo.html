@@ -28,7 +28,8 @@
     <div class="field"><label for="n">Nombre y apellido</label><input id="n" autocomplete="off"></div>
     <div class="field"><label for="e">Correo</label><input id="e" type="email" inputmode="email" autocomplete="off" autocapitalize="none"></div>
     <div class="field"><label for="c">Contraseña temporal (mínimo 8 caracteres)</label><input id="c" type="text" autocomplete="off" autocapitalize="none"></div>
-    <div class="field"><label for="r">Nivel</label><select id="r"><option value="agente">Agente (capta y hace seguimiento)</option><option value="senior">Dirección (además gestiona el equipo)</option></select></div>
+    <div class="field"><label for="r">Nivel</label><select id="r"><option value="semisenior">Corredor</option><option value="asistente">Gestor</option><option value="senior">Dirección</option></select></div>
+    <p class="foot" style="text-align:left;margin:-6px 0 16px"><b>Dirección:</b> ve todo, reasigna propiedades y gestiona el equipo.<br><b>Corredor:</b> ve y gestiona lo que capta o se le asigna, y puede cerrar operaciones.<br><b>Gestor:</b> capta y hace seguimiento de lo suyo; no puede cerrar operaciones.</p>
     <button class="btn" type="submit" id="go">Dar de alta</button>
     <p class="msg" id="msg" role="status" aria-live="polite" style="white-space:pre-wrap"></p>
   </form>
@@ -38,7 +39,7 @@
 <script type="module">
 import { CFG, db, initializeApp, getAuth, createUserWithEmailAndPassword, signOut, collection, getDocs, query, where, doc, setDoc, updateDoc, serverTimestamp } from './fb.js';
 import { iniciar, esDemo } from './datos.js';
-const $ = id => document.getElementById(id), esc = window.DI.esc;
+const $ = id => document.getElementById(id), DI = window.DI, esc = DI.esc;
 const msg = (t, k) => { $('msg').className = 'msg ' + (k || ''); $('msg').textContent = t; };
 let ctx = null;
 
@@ -47,8 +48,8 @@ async function listar() {
     const r = await getDocs(query(collection(db, 'users'), where('negocio_id', '==', ctx.sesion.negocioId))), f = [];
     r.forEach(d => f.push(Object.assign({ id: d.id }, d.data())));
     f.sort((a, b) => String(a.nombre_display).localeCompare(String(b.nombre_display)));
-    $('lista').innerHTML = f.map(u => '<div class="fila"><div><b>' + esc(u.nombre_display || u.email) + '</b><small>' + esc(u.email) + ' · ' + (u.rol_jerarquia === 'senior' ? 'Dirección' : 'Agente') + (u.activo === false ? ' · de baja' : '') + '</small></div>' +
-      (u.id === ctx.sesion.mail ? '' : '<button class="btn line sm" data-id="' + esc(u.id) + '" data-a="' + (u.activo === false ? '1' : '0') + '">' + (u.activo === false ? 'Reactivar' : 'Dar de baja') + '</button>') + '</div>').join('') || 'Todavía no hay personas.';
+    $('lista').innerHTML = f.map(u => '<div class="fila"><div><b>' + esc(u.nombre_display || u.email) + '</b><small>' + esc(u.email) + ' · ' + (DI.ROLES[u.rol_jerarquia] || 'Gestor') + (u.activo === false ? ' · de baja' : '') + '</small></div>' +
+      (u.id === ctx.sesion.mail ? '' : '<select class="mini" style="width:auto;margin:0" data-nivel="' + esc(u.id) + '" aria-label="Nivel">' + ['asistente', 'semisenior', 'senior'].map(r => '<option value="' + r + '"' + (r === u.rol_jerarquia ? ' selected' : '') + '>' + DI.ROLES[r] + '</option>').join('') + '</select><button class="btn line sm" data-id="' + esc(u.id) + '" data-a="' + (u.activo === false ? '1' : '0') + '">' + (u.activo === false ? 'Reactivar' : 'Dar de baja') + '</button>') + '</div>').join('') || 'Todavía no hay personas.';
   } catch (e) { $('lista').textContent = 'No se pudo leer el equipo (' + (e.code || e.message) + ').'; }
 }
 
@@ -57,6 +58,11 @@ async function listar() {
   ctx = await iniciar(); if (!ctx) return;
   if (!ctx.esSenior && !ctx.esSuperadmin) { location.replace('dashboard.html'); return; }
   listar();
+  $('lista').onchange = async e => {
+    const sl = e.target.closest('select[data-nivel]'); if (!sl) return;
+    try { await updateDoc(doc(db, 'users', sl.dataset.nivel), { rol_jerarquia: sl.value }); } catch (err) { alert('No se pudo cambiar el nivel (' + (err.code || err.message) + ').'); }
+    listar();
+  };
   $('lista').onclick = async e => {
     const b = e.target.closest('button[data-id]'); if (!b) return; b.disabled = true;
     try { await updateDoc(doc(db, 'users', b.dataset.id), { activo: b.dataset.a === '1' }); } catch (err) { alert('No se pudo cambiar (' + (err.code || err.message) + ').'); }

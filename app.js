@@ -20,6 +20,9 @@
     ]
   };
 
+  D.ROLES = { senior: 'Dirección', semisenior: 'Corredor', asistente: 'Gestor' };
+  D.ESTADOS = ['Nueva', 'En promoción', 'Con oferta', 'Reservada', 'Contrato en revisión', 'Cerrada'];
+
   D.load = function () {
     try { var d = JSON.parse(localStorage.getItem(KEY)); if (d && d.props && d.leads) return d; } catch (e) {}
     return JSON.parse(JSON.stringify(SEED));

@@ -38,6 +38,7 @@
       <select id="op"><option>Solo tasación</option><option>Venta exclusiva</option><option>Alquiler</option></select></div>
     <div class="field"><label for="pn">Propietario (opcional)</label><input id="pn" type="text" autocomplete="off" placeholder="Nombre y apellido"></div>
     <div class="field"><label for="pt">WhatsApp del propietario (opcional)</label><input id="pt" type="tel" inputmode="tel" autocomplete="off" placeholder="2615551234 (con código de área, sin 0 ni 15)"></div>
+    <div class="field" id="asig-box" hidden><label for="asig">A cargo de</label><select id="asig"></select></div>
     <button class="btn" type="submit" id="go">Subir al sistema</button>
     <p class="msg" id="msg" role="status" aria-live="polite"></p>
   </form>
@@ -53,6 +54,7 @@ function mostrar(url) { foto = url || ''; const s = $('shot'); if (foto) { s.sty
 
 (async () => {
   ctx = await iniciar(); if (!ctx) return;
+  if (ctx.esSenior) { try { const ps = await ctx.equipo(); if (ps.length > 1) { $('asig').innerHTML = ps.map(u => '<option value="' + DI.esc(u.email) + '"' + (u.email === ctx.mail ? ' selected' : '') + '>' + DI.esc(u.nombre) + ' · ' + (DI.ROLES[u.rol] || '') + '</option>').join(''); $('asig-box').hidden = false; } } catch (e) {} }
   try { const pend = sessionStorage.getItem('domino_foto'); if (pend) { mostrar(pend); sessionStorage.removeItem('domino_foto'); } } catch (e) {}
   $('foto').addEventListener('change', function () {
     const f = this.files && this.files[0]; if (!f) return;
@@ -65,6 +67,7 @@ function mostrar(url) { foto = url || ''; const s = $('shot'); if (foto) { s.sty
     if (pt && !DI.tel(pt)) { msg('Revise el WhatsApp: código de área y número, sin 0 ni 15.', 'er'); $('pt').focus(); return; }
     $('go').disabled = true; msg('Guardando…');
     const prop = { titulo: dir, estado: 'Nueva · ' + $('op').value, operacion: $('op').value, img: foto, propietario: $('pn').value.trim(), propietario_tel: pt ? DI.tel(pt) : '' };
+    if (!$('asig-box').hidden) prop.asignado = $('asig').value;
     try { await ctx.agregarProp(prop); }
     catch (err) { $('go').disabled = false; msg('No se pudo guardar (' + (err.code || err.message) + ').', 'er'); return; }
     location.href = 'dashboard.html';
