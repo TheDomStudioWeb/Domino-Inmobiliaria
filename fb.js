@@ -1,7 +1,7 @@
 // DOMino Inmobiliaria · conexión con Firebase y sesión de la inmobiliaria.
 // Las claves de abajo identifican el proyecto; no son secretas. Lo que protege los datos son las reglas de Firestore (firestore.rules).
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence, sendPasswordResetEmail, createUserWithEmailAndPassword }
+import { getAuth, initializeAuth, inMemoryPersistence, browserSessionPersistence, onAuthStateChanged, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence, sendPasswordResetEmail, createUserWithEmailAndPassword }
   from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs, addDoc, query, orderBy, where, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -16,7 +16,11 @@ export const CFG = {
 };
 
 export const app = initializeApp(CFG);
-export const auth = getAuth(app);
+// Sesión guardada en el almacenamiento simple del navegador (localStorage): más liviana y sin la base interna de Firebase,
+// que en algunos teléfonos se traba. Si no hay almacenamiento, la sesión dura mientras la pestaña esté abierta.
+export const auth = initializeAuth(app, { persistence: [browserLocalPersistence, browserSessionPersistence, inMemoryPersistence] });
+// Cuenta auxiliar (alta de personas sin cerrar la sesión de la Dirección): solo en memoria.
+export const authSecundaria = (a) => initializeAuth(a, { persistence: inMemoryPersistence });
 export const db = getFirestore(app);
 export { initializeApp, getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence, sendPasswordResetEmail, createUserWithEmailAndPassword,
   doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs, addDoc, query, orderBy, where, serverTimestamp };

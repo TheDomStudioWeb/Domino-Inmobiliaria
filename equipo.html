@@ -37,7 +37,7 @@
 </div>
 <script src="app.js"></script>
 <script type="module">
-import { CFG, db, initializeApp, getAuth, createUserWithEmailAndPassword, signOut, collection, getDocs, query, where, doc, setDoc, updateDoc, serverTimestamp } from './fb.js';
+import { CFG, db, initializeApp, authSecundaria, createUserWithEmailAndPassword, signOut, collection, getDocs, query, where, doc, setDoc, updateDoc, serverTimestamp } from './fb.js';
 import { iniciar, esDemo } from './datos.js';
 const $ = id => document.getElementById(id), DI = window.DI, esc = DI.esc;
 const msg = (t, k) => { $('msg').className = 'msg ' + (k || ''); $('msg').textContent = t; };
@@ -75,7 +75,7 @@ async function listar() {
     if (cl.length < 8) return msg('La contraseña temporal necesita al menos 8 caracteres.', 'er');
     $('go').disabled = true; msg('Creando…');
     try {
-      const sec = initializeApp(CFG, 'sec' + Date.now()), sa = getAuth(sec); let nota = 'Cuenta creada.';
+      const sec = initializeApp(CFG, 'sec' + Date.now()), sa = authSecundaria(sec); let nota = 'Cuenta creada.';
       try { await createUserWithEmailAndPassword(sa, em, cl); }
       catch (err) { if (err.code === 'auth/email-already-in-use') nota = 'Ese correo ya tenía cuenta: conserva su contraseña.'; else throw err; }
       await signOut(sa);
