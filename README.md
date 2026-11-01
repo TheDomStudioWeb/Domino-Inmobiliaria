@@ -12,6 +12,8 @@ Desarrollado por [The DOM Studio Web](https://thedomstudioweb.github.io/) · Wha
 | `dashboard.html` | Panel: resumen, propiedades en gestión, leads, aviso al propietario por WhatsApp |
 | `captura.html` | Captación: foto con la cámara, dirección y tipo de operación |
 | `equipo.html` | Alta y baja de personas del equipo (solo Dirección) |
+| `config.html` | Nombre comercial y WhatsApp de la inmobiliaria (solo Dirección) |
+| `firebase.json` / `.firebaserc` | Publicación en Firebase Hosting (domino-inmobiliaria.web.app) |
 | `centros/` | Alta de inmobiliarias y su director/a (solo superadmins de The DOM) |
 | `fb.js` / `datos.js` | Conexión con Firebase, sesión de la inmobiliaria y capa de datos (demo local o Firestore) |
 | `firestore.rules` | Reglas de seguridad: cada inmobiliaria ve solo lo suyo |

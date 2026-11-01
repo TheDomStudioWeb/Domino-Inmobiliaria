@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DOMino Inmobiliaria · Datos de la inmobiliaria</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0A0A0A">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="imagenes/favicon-64.png">
+<link rel="apple-touch-icon" href="imagenes/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="page">
+  <div class="head">
+    <a class="back" href="dashboard.html" aria-label="Volver al panel"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <h2>Datos de la inmobiliaria</h2>
+  </div>
+  <p class="sub" style="color:var(--mut);margin:0 0 20px">Estos datos se usan en los mensajes de WhatsApp que el equipo envía a propietarios y consultas.</p>
+
+  <form id="f" novalidate>
+    <div class="field"><label for="nc">Nombre comercial</label><input id="nc" autocomplete="off" placeholder="Ej.: Martín Propiedades"></div>
+    <div class="field"><label for="tel">WhatsApp de la inmobiliaria</label><input id="tel" type="tel" inputmode="tel" autocomplete="off" placeholder="2615551234 (con código de área, sin 0 ni 15)"></div>
+    <div class="field"><label for="dir">Dirección o zona (opcional)</label><input id="dir" autocomplete="off" placeholder="Ej.: Godoy Cruz, Mendoza"></div>
+    <button class="btn" type="submit" id="go">Guardar</button>
+    <p class="msg" id="msg" role="status" aria-live="polite"></p>
+  </form>
+  <p class="foot">Desarrollado por <a href="https://thedomstudioweb.github.io/" target="_blank" rel="noopener">The DOM Studio Web</a> · WhatsApp 261-3431216 · thedomstudioweb@gmail.com</p>
+</div>
+<script src="app.js"></script>
+<script type="module">
+import { iniciar, esDemo } from './datos.js';
+const $ = id => document.getElementById(id), DI = window.DI;
+const msg = (t, k) => { $('msg').className = 'msg ' + (k || ''); $('msg').textContent = t; };
+(async () => {
+  if (esDemo()) { location.replace('dashboard.html'); return; }
+  const ctx = await iniciar(); if (!ctx) return;
+  if (!ctx.esSenior) { location.replace('dashboard.html'); return; }
+  $('nc').value = ctx.config.nombre_comercial || ctx.nombre || ''; $('tel').value = ctx.config.telefono || ''; $('dir').value = ctx.config.direccion || '';
+  $('f').addEventListener('submit', async e => {
+    e.preventDefault();
+    const nc = $('nc').value.trim(), t = $('tel').value.trim(), d = $('dir').value.trim();
+    if (nc.length < 2) return msg('Escriba el nombre comercial.', 'er');
+    if (t && !DI.tel(t)) return msg('Revise el WhatsApp: código de área y número, sin 0 ni 15.', 'er');
+    $('go').disabled = true; msg('Guardando…');
+    try { await ctx.guardarConfig({ nombre_comercial: nc, telefono: t ? DI.tel(t) : '', direccion: d }); msg('Guardado.', 'ok'); }
+    catch (err) { msg('No se pudo guardar (' + (err.code || err.message) + ').', 'er'); }
+    $('go').disabled = false;
+  });
+})();
+</script>
+</body>
+</html>

@@ -16,7 +16,7 @@ export async function iniciar() {
   if (esDemo()) {
     const DI = window.DI;
     return {
-      demo: true, nombre: 'Demostración', iniciales: 'AG', rol: 'semisenior', esSenior: false, esSuperadmin: false, vence: null, mail: 'demo', equipo: async () => [],
+      demo: true, nombre: 'Demostración', iniciales: 'AG', rol: 'semisenior', esSenior: false, esSuperadmin: false, vence: null, mail: 'demo', equipo: async () => [], config: {}, firma: '',
       actualizarProp: async (id, campos) => { const d = DI.load(); const p = d.props.find(x => x.id === id); if (p) Object.assign(p, campos); DI.save(d); },
       props: async () => DI.load().props, leads: async () => DI.load().leads,
       agregarProp: async (p) => { const d = DI.load(); d.props.unshift(Object.assign({ id: 'n' + hoy() }, p)); if (!DI.save(d)) { d.props[0].img = ''; if (!DI.save(d)) throw new Error('No se pudo guardar en este teléfono.'); } },
@@ -30,7 +30,11 @@ export async function iniciar() {
   if (!s) return null;
   const base = ['negocios', s.negocioId];
   const DI = window.DI;
-  try { const c = await getDoc(doc(db, ...base, 'config', 'general')); if (c.exists() && c.data().telefono) DI.setWA(c.data().telefono); } catch (e) {}
+  let config = {};
+  try { const c = await getDoc(doc(db, ...base, 'config', 'general')); if (c.exists()) config = c.data(); } catch (e) {}
+  const nombreCom = config.nombre_comercial || s.negocio.nombre || 'Inmobiliaria';
+  // Firma de los mensajes de WhatsApp: nombre comercial y, si está cargado, el WhatsApp de la inmobiliaria.
+  const firma = nombreCom + (config.telefono ? ' · WhatsApp ' + config.telefono.replace(/^549/, '') : '');
   const senior = s.perfil.rol_jerarquia === 'senior';
   const ms = (c) => (c && c.toMillis ? c.toMillis() : 0);
   // La Dirección lee todo; Corredor y Gestor, solo lo que captaron o se les asignó (dos consultas, sin índices compuestos).
@@ -43,7 +47,7 @@ export async function iniciar() {
   };
   const nuevo = (extra) => Object.assign({}, extra, { creado: serverTimestamp(), creado_por: s.mail, asignado: (senior && extra.asignado) || s.mail });
   return {
-    demo: false, nombre: s.negocio.nombre || 'Inmobiliaria', iniciales: iniciales(s.perfil.nombre_display), rol: s.perfil.rol_jerarquia, mail: s.mail, esSenior: senior,
+    demo: false, nombre: nombreCom, config, firma, iniciales: iniciales(s.perfil.nombre_display), rol: s.perfil.rol_jerarquia, mail: s.mail, esSenior: senior,
     esSuperadmin: s.esSuperadmin, vence: s.negocio.estado === 'prueba' ? s.negocio.vence : null, sesion: s,
     props: () => leer('props'), leads: () => leer('leads'),
     agregarProp: (p) => addDoc(collection(db, ...base, 'props'), nuevo(p)),
@@ -51,6 +55,7 @@ export async function iniciar() {
     equipo: async () => { const r = await getDocs(query(collection(db, 'users'), where('negocio_id', '==', s.negocioId))), f = []; r.forEach(d => { const u = d.data(); if (u.activo !== false) f.push({ email: d.id, nombre: u.nombre_display || d.id, rol: u.rol_jerarquia }); }); return f; },
     agregarLead: (l) => addDoc(collection(db, ...base, 'leads'), nuevo(l)),
     actualizarLead: (id, campos) => updateDoc(doc(db, ...base, 'leads', id), campos),
+    guardarConfig: async (c) => { await setDoc(doc(db, ...base, 'config', 'general'), c, { merge: true }); config = Object.assign({}, config, c); },
     reiniciar: async () => {},
     salir: async () => { await salirConAviso(''); }
   };

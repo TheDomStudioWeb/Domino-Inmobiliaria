@@ -28,3 +28,4 @@ Se entrega con su marca, su WhatsApp, datos propios por centro, ingreso real de 
 - Los datos de una inmobiliaria nunca se ven desde otra.
 - La Dirección puede asignar cada consulta a una persona del equipo (al registrarla o después, con «Asignar a…»). Cada persona ve solo las consultas que registró o que le asignaron.
 - Para salir de la cuenta, se toca el círculo con las iniciales (arriba a la derecha del panel).
+- La Dirección carga el nombre comercial y el WhatsApp de la inmobiliaria en «Datos de la inmobiliaria» (al pie del panel). Esos datos firman los mensajes de WhatsApp que el equipo envía a propietarios y consultas.

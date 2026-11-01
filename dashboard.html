@@ -51,7 +51,7 @@
   </details>
 
   <p class="foot" id="salir-ayuda">Para salir, toque sus iniciales (arriba a la derecha).</p>
-  <p class="foot" id="equipo-link" hidden><a href="equipo.html">Gestionar el equipo</a> · <a href="centros/" id="centros-link" hidden>Alta de inmobiliarias</a></p>
+  <p class="foot" id="equipo-link" hidden><a href="equipo.html">Gestionar el equipo</a> · <a href="config.html">Datos de la inmobiliaria</a> · <a href="centros/" id="centros-link" hidden>Alta de inmobiliarias</a></p>
   <button class="reset" id="reset" type="button" hidden>Restablecer datos de ejemplo</button>
   <p class="foot"><span id="demo-nota" hidden>Demostración: los avisos de WhatsApp llegan al estudio que desarrolló la app.<br></span>Desarrollado por <a href="https://thedomstudioweb.github.io/" target="_blank" rel="noopener">The DOM Studio Web</a> · WhatsApp 261-3431216 · thedomstudioweb@gmail.com</p>
 </main>
@@ -104,7 +104,7 @@ async function pintar() {
       b.appendChild(as);
     }
     const a = document.createElement('a'); a.className = 'btn ok'; a.target = '_blank'; a.rel = 'noopener';
-    a.href = DI.wa('Hola' + (p.propietario ? ' ' + p.propietario : '') + ', te escribo desde ' + (ctx.demo ? 'DOMino Inmobiliaria' : ctx.nombre) + '. Reporte de tu propiedad «' + p.titulo + '»: ' + p.estado + '. ¡Seguimos avanzando!', ctx.demo ? undefined : (p.propietario_tel || ''));
+    a.href = DI.wa('Hola' + (p.propietario ? ' ' + p.propietario : '') + ', te escribo desde ' + (ctx.demo ? 'DOMino Inmobiliaria' : ctx.nombre) + '. Reporte de tu propiedad «' + p.titulo + '»: ' + p.estado + '. ¡Seguimos avanzando!' + (ctx.firma ? '\n— ' + ctx.firma : ''), ctx.demo ? undefined : (p.propietario_tel || ''));
     a.innerHTML = WAI + 'Notificar al propietario';
     b.appendChild(a); c.appendChild(im); c.appendChild(b); box.appendChild(c);
   });
@@ -121,7 +121,7 @@ async function pintar() {
       r.firstChild.appendChild(as);
     }
     const a = document.createElement('a'); a.className = 'btn line sm'; a.target = '_blank'; a.rel = 'noopener';
-    a.href = DI.wa('Hola ' + x.nombre + ', te escribo desde ' + (ctx.demo ? 'DOMino Inmobiliaria' : ctx.nombre) + ' por tu consulta: ' + x.detalle + '.', ctx.demo ? undefined : (x.telefono || ''));
+    a.href = DI.wa('Hola ' + x.nombre + ', te escribo desde ' + (ctx.demo ? 'DOMino Inmobiliaria' : ctx.nombre) + ' por tu consulta: ' + x.detalle + '.' + (ctx.firma ? '\n— ' + ctx.firma : ''), ctx.demo ? undefined : (x.telefono || ''));
     a.textContent = 'Contactar'; r.appendChild(a); l.appendChild(r);
   });
   if (!leads.length) l.innerHTML = '<p class="empty">No hay consultas pendientes.</p>';
