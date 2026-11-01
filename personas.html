@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DOMino Inmobiliaria · Personas</title>
+<meta name="theme-color" content="#0A0A0A">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="imagenes/favicon-64.png">
+<link rel="apple-touch-icon" href="imagenes/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="page">
+  <div class="head">
+    <a class="back" href="dashboard.html" aria-label="Volver al panel"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <h2>Propietarios e inquilinos</h2>
+  </div>
+
+  <details class="nuevo" id="alta">
+    <summary class="btn line sm" id="alta-t">+ Nueva persona</summary>
+    <form id="fa" novalidate></form>
+  </details>
+
+  <div class="filtros" role="group" aria-label="Filtrar">
+    <button type="button" data-f="" aria-pressed="true">Todos</button>
+    <button type="button" data-f="propietario" aria-pressed="false">Propietarios</button>
+    <button type="button" data-f="inquilino" aria-pressed="false">Inquilinos</button>
+  </div>
+  <div class="field"><label for="q" class="sr">Buscar</label><input id="q" type="search" autocomplete="off" placeholder="Buscar por nombre, teléfono o DNI"></div>
+
+  <p class="msg" id="aviso" role="status" hidden></p>
+  <div class="fichas" id="lista" aria-live="polite"></div>
+
+  <p class="foot">Los datos de las personas los ve solo el equipo de la inmobiliaria.<br>Desarrollado por <a href="https://thedomstudioweb.github.io/" target="_blank" rel="noopener">The DOM Studio Web</a> · WhatsApp 261-3431216 · thedomstudioweb@gmail.com</p>
+</div>
+
+<script src="app.js"></script>
+<script type="module">
+import { iniciar } from './datos.js';
+const $ = id => document.getElementById(id), DI = window.DI, esc = DI.esc;
+const TIPOS = { propietario: 'Propietario', inquilino: 'Inquilino' };
+const norm = t => String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+let ctx = null, fichas = [], props = [], equipo = [], filtro = '', abierta = '';
+
+// Formulario de alta o edición (f = ficha existente o null).
+function formulario(f) {
+  const v = k => esc(f && f[k] || '');
+  const opAs = ctx.esSenior && equipo.length > 1 ? '<div class="field"><label>A cargo de</label><select class="x-asig">' + equipo.map(u => '<option value="' + esc(u.email) + '"' + (u.email === ((f && f.asignado) || ctx.mail) ? ' selected' : '') + '>' + esc(u.nombre) + ' · ' + (DI.ROLES[u.rol] || '') + '</option>').join('') + '</select></div>' : '';
+  return '<div class="field"><label>Tipo</label><select class="x-tipo"><option value="propietario"' + (f && f.tipo === 'propietario' ? ' selected' : '') + '>Propietario</option><option value="inquilino"' + (f && f.tipo === 'inquilino' ? ' selected' : '') + '>Inquilino</option></select></div>'
+    + '<div class="field"><label>Nombre y apellido</label><input class="x-nombre" autocomplete="off" value="' + v('nombre') + '" placeholder="Nombre y apellido"></div>'
+    + '<div class="field"><label>WhatsApp (con código de área, sin 0 ni 15)</label><input class="x-tel" type="tel" inputmode="tel" autocomplete="off" value="' + esc(f && f.telefono ? f.telefono.replace(/^549/, '') : '') + '" placeholder="2615551234"></div>'
+    + '<div class="field"><label>Correo (opcional)</label><input class="x-mail" type="email" inputmode="email" autocomplete="off" autocapitalize="none" value="' + v('email') + '" placeholder="persona@correo.com"></div>'
+    + '<div class="field"><label>DNI (opcional)</label><input class="x-dni" inputmode="numeric" autocomplete="off" value="' + v('dni') + '" placeholder="Solo números"></div>'
+    + '<div class="field"><label>Domicilio (opcional)</label><input class="x-dom" autocomplete="off" value="' + v('domicilio') + '" placeholder="Calle, número, localidad"></div>'
+    + '<div class="field"><label>Notas (opcional)</label><input class="x-notas" autocomplete="off" value="' + v('notas') + '" placeholder="Ej.: prefiere que lo llamen por la tarde"></div>'
+    + opAs + '<button class="btn" type="submit">Guardar</button><p class="msg x-msg" role="status"></p>';
+}
+// Lee y valida el formulario. Devuelve { datos } o { error }.
+function leer(form) {
+  const q = c => form.querySelector('.' + c), nombre = q('x-nombre').value.trim(), tel = q('x-tel').value.trim(), mail = q('x-mail').value.trim(), dni = q('x-dni').value.replace(/\D/g, '');
+  if (nombre.length < 2) return { error: 'Escriba el nombre.', foco: q('x-nombre') };
+  if (tel && !DI.tel(tel)) return { error: 'Revise el WhatsApp: código de área y número, sin 0 ni 15.', foco: q('x-tel') };
+  if (mail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) return { error: 'Revise el correo.', foco: q('x-mail') };
+  if (q('x-dni').value.trim() && (dni.length < 6 || dni.length > 9)) return { error: 'Revise el DNI (6 a 9 números).', foco: q('x-dni') };
+  const d = { tipo: q('x-tipo').value, nombre, telefono: tel ? DI.tel(tel) : '', email: mail, dni, domicilio: q('x-dom').value.trim(), notas: q('x-notas').value.trim() };
+  const a = q('x-asig'); if (a) d.asignado = a.value;
+  return { datos: d };
+}
+
+function pintar() {
+  const n = norm($('q').value), dq = $('q').value.replace(/\D/g, '');
+  const lista = fichas.filter(f => (!filtro || f.tipo === filtro) && (!n || norm(f.nombre).includes(n) || (dq.length >= 3 && (String(f.telefono).includes(dq) || String(f.dni).includes(dq)))))
+    .sort((a, b) => norm(a.nombre).localeCompare(norm(b.nombre)));
+  const box = $('lista'); box.innerHTML = '';
+  lista.forEach(f => {
+    const mias = props.filter(p => p.propietario_id === f.id || p.inquilino_id === f.id);
+    const e = document.createElement('article'); e.className = 'ficha';
+    e.innerHTML = '<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><h4>' + esc(f.nombre) + '</h4><p>' + esc(f.telefono ? f.telefono.replace(/^549/, '') : 'Sin teléfono') + (f.email ? ' · ' + esc(f.email) : '') + '</p></div><span class="chip">' + TIPOS[f.tipo] + '</span></div>'
+      + (f.dni || f.domicilio ? '<p>' + (f.dni ? 'DNI ' + esc(f.dni) : '') + (f.dni && f.domicilio ? ' · ' : '') + esc(f.domicilio || '') + '</p>' : '')
+      + (mias.length ? '<p>' + (f.tipo === 'inquilino' ? 'Alquila: ' : 'Propiedades: ') + mias.map(p => esc(p.titulo)).join(' · ') + '</p>' : '')
+      + (f.notas ? '<p>' + esc(f.notas) + '</p>' : '');
+    const acc = document.createElement('div'); acc.className = 'acc';
+    if (f.telefono) {
+      const w = document.createElement('a'); w.className = 'btn ok sm'; w.target = '_blank'; w.rel = 'noopener'; w.textContent = 'WhatsApp';
+      w.href = DI.wa('Hola ' + f.nombre + ', te escribo desde ' + ctx.nombre + '.' + (ctx.firma ? '\n— ' + ctx.firma : ''), ctx.demo ? undefined : f.telefono); acc.appendChild(w);
+      const l = document.createElement('a'); l.className = 'btn line sm'; l.href = 'tel:+' + f.telefono; l.textContent = 'Llamar'; acc.appendChild(l);
+    }
+    const ed = document.createElement('button'); ed.type = 'button'; ed.className = 'btn line sm'; ed.textContent = abierta === f.id ? 'Cerrar' : 'Editar';
+    ed.onclick = () => { abierta = abierta === f.id ? '' : f.id; pintar(); }; acc.appendChild(ed);
+    e.appendChild(acc);
+    if (abierta === f.id) {
+      const fm = document.createElement('form'); fm.noValidate = true; fm.innerHTML = formulario(f);
+      fm.addEventListener('submit', async ev => {
+        ev.preventDefault(); const m = fm.querySelector('.x-msg'), r = leer(fm);
+        if (r.error) { m.className = 'msg er x-msg'; m.textContent = r.error; r.foco.focus(); return; }
+        try { await ctx.actualizarFicha(f.id, r.datos); } catch (err) { m.className = 'msg er x-msg'; m.textContent = 'No se pudo guardar (' + (err.code || err.message) + ').'; return; }
+        abierta = ''; await cargar();
+      });
+      if (ctx.esSenior) {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'btn dan sm'; b.textContent = 'Eliminar ficha'; b.style.marginTop = '8px'; let seguro = false;
+        b.onclick = async () => { if (!seguro) { seguro = true; b.textContent = 'Tocar de nuevo para eliminar'; return; }
+          try { await ctx.borrarFicha(f.id); abierta = ''; await cargar(); } catch (err) { fm.querySelector('.x-msg').className = 'msg er x-msg'; fm.querySelector('.x-msg').textContent = 'No se pudo eliminar (' + (err.code || err.message) + ').'; } };
+        fm.appendChild(b);
+      }
+      e.appendChild(fm);
+    }
+    box.appendChild(e);
+  });
+  if (!lista.length) box.innerHTML = '<p class="empty">' + (fichas.length ? 'No hay personas con ese filtro.' : 'Todavía no hay propietarios ni inquilinos cargados. Toque «Nueva persona».') + '</p>';
+}
+async function cargar() {
+  try { [fichas, props] = await Promise.all([ctx.fichas(), ctx.props()]); $('aviso').hidden = true; }
+  catch (e) { $('aviso').hidden = false; $('aviso').className = 'msg er'; $('aviso').textContent = 'No se pudieron leer los datos (' + (e.code || e.message) + '). Revise la conexión.'; }
+  pintar();
+}
+
+(async () => {
+  ctx = await iniciar(); if (!ctx) return;
+  if (ctx.esSenior) { try { equipo = await ctx.equipo(); } catch (e) { equipo = []; } }
+  $('fa').innerHTML = formulario(null);
+  $('fa').addEventListener('submit', async ev => {
+    ev.preventDefault(); const m = $('fa').querySelector('.x-msg'), r = leer($('fa'));
+    if (r.error) { m.className = 'msg er x-msg'; m.textContent = r.error; r.foco.focus(); return; }
+    try { await ctx.agregarFicha(r.datos); } catch (err) { m.className = 'msg er x-msg'; m.textContent = 'No se pudo guardar (' + (err.code || err.message) + ').'; return; }
+    $('fa').innerHTML = formulario(null); $('alta').open = false; await cargar();
+  });
+  document.querySelectorAll('.filtros button').forEach(b => b.onclick = () => { filtro = b.dataset.f; document.querySelectorAll('.filtros button').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false')); pintar(); });
+  $('q').addEventListener('input', pintar);
+  await cargar();
+})();
+</script>
+</body>
+</html>

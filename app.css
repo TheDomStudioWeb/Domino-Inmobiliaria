@@ -111,3 +111,26 @@ button.avatar{border:0;cursor:pointer}
 [hidden]{display:none!important}
 
 select.mini{width:100%;min-height:42px;margin:0 0 10px;padding:0 10px;background:var(--panel-2);color:var(--tx);border:1px solid #3a372c;border-radius:4px;font:inherit;font-size:.85rem}
+
+/* Fase 2: fichas de personas y contratos */
+.chip.ok{border-color:var(--ok);background:rgba(76,195,138,.12);color:var(--ok)}
+.chip.warn{border-color:var(--gold-hi);background:rgba(232,199,102,.16);color:var(--gold-hi)}
+.chip.er{border-color:var(--er);background:rgba(255,107,97,.12);color:var(--er)}
+.filtros{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 14px}
+.filtros button{min-height:42px;padding:0 16px;background:var(--panel-2);border:1px solid #3a372c;border-radius:999px;color:var(--mut);font:600 .74rem/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.filtros button[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:#0A0A0A}
+.fichas{display:grid;gap:10px}
+.ficha{padding:14px 16px;background:var(--panel);border:1px solid var(--line);border-radius:4px;display:grid;gap:8px}
+.ficha h4{font:600 1rem/1.3 var(--sans)} .ficha p{font-size:.82rem;color:var(--mut)}
+.ficha .acc{display:flex;gap:8px;flex-wrap:wrap}
+.ficha form{margin-top:6px;padding-top:14px;border-top:1px solid #2a2820}
+.btn.dan{background:transparent;border-color:var(--er);color:var(--er)}
+.btn.dan:hover{background:var(--er);color:#0A0A0A}
+.card .contrato{padding:10px 12px;border:1px solid #3a372c;border-radius:4px;background:var(--panel-2);display:grid;gap:8px}
+.card .contrato summary{cursor:pointer;font:600 .72rem/1.3 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+.card .contrato .field{margin:8px 0 0}
+.card .contrato .field input,.card .contrato .field select{min-height:46px}
+.venc{display:grid;gap:10px}
+.venc .lead{align-items:flex-start;flex-direction:column}
+.venc .acc{display:flex;gap:8px;flex-wrap:wrap}
+@media (max-width:380px){.tab{min-width:70px}}

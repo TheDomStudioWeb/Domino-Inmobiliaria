@@ -33,3 +33,12 @@ Se entrega con su marca, su WhatsApp, datos propios por centro, ingreso real de 
 - La Dirección puede asignar cada consulta a una persona del equipo (al registrarla o después, con «Asignar a…»). Cada persona ve solo las consultas que registró o que le asignaron.
 - Para salir de la cuenta, se toca el círculo con las iniciales (arriba a la derecha del panel).
 - La Dirección carga el nombre comercial y el WhatsApp de la inmobiliaria en «Datos de la inmobiliaria» (al pie del panel). Esos datos firman los mensajes de WhatsApp que el equipo envía a propietarios y consultas.
+
+## Propietarios, inquilinos y contratos
+- **Personas** (botón arriba a la derecha del panel): fichas de propietarios e inquilinos con nombre, WhatsApp, correo, DNI, domicilio y notas. Se busca por nombre, teléfono o DNI y se filtra por tipo. Cada ficha tiene «WhatsApp», «Llamar» y «Editar». La Dirección también puede eliminar fichas.
+- Al captar una propiedad con propietario, la ficha del propietario se crea sola (si ya existe, se reutiliza).
+- **Contrato e inquilino:** en cada propiedad, el desplegable «Contrato e inquilino» permite elegir el inquilino y el propietario (de las fichas) y cargar la fecha de inicio y de vencimiento del contrato.
+- La tarjeta de la propiedad muestra el estado del contrato: verde si falta más de 60 días, amarillo si vence dentro de 60 días, rojo si vence hoy o ya venció.
+- **Contratos por vencer:** el panel lista los contratos que vencen en 90 días o menos (o ya vencidos) y avisa arriba si alguno vence en 30 días o menos. Cada uno tiene «Avisar al inquilino» y «Avisar al propietario», que abren WhatsApp con el mensaje armado.
+- Cada persona ve solo las fichas que cargó o que se le asignaron; la Dirección ve todas.
+- Todavía no guarda documentos (DNI, escrituras, contratos escaneados): por ahora la ficha guarda solo datos, fechas y notas.

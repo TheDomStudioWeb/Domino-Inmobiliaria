@@ -64,6 +64,20 @@ service cloud.firestore {
         allow delete: if seniorDe(nid);
       }
 
+      // Fichas de propietarios e inquilinos (datos y notas; sin documentos adjuntos). Mismo criterio de visibilidad; solo la Dirección elimina.
+      match /personas/{id} {
+        allow read: if seniorDe(nid) || (personalDe(nid) && (resource.data.creado_por == mail() || resource.data.asignado == mail()));
+        allow create: if personalDe(nid) && request.resource.data.get('creado_por', '') == mail()
+          && request.resource.data.nombre is string && request.resource.data.nombre.size() > 0 && request.resource.data.nombre.size() < 200
+          && request.resource.data.tipo in ['propietario', 'inquilino']
+          && (seniorDe(nid) || request.resource.data.get('asignado', '') == mail());
+        allow update: if seniorDe(nid) || (personalDe(nid)
+              && (resource.data.get('creado_por', '') == mail() || resource.data.get('asignado', '') == mail())
+              && request.resource.data.get('creado_por', '') == resource.data.get('creado_por', '')
+              && request.resource.data.get('asignado', '') == resource.data.get('asignado', ''));
+        allow delete: if seniorDe(nid);
+      }
+
       // Consultas de personas interesadas: mismo criterio de visibilidad.
       match /leads/{id} {
         allow read: if seniorDe(nid) || (personalDe(nid) && (resource.data.creado_por == mail() || resource.data.asignado == mail()));

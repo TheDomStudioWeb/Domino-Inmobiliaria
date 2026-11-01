@@ -68,6 +68,15 @@ function mostrar(url) { foto = url || ''; const s = $('shot'); if (foto) { s.sty
     $('go').disabled = true; msg('Guardando…');
     const prop = { titulo: dir, estado: 'Nueva · ' + $('op').value, operacion: $('op').value, img: foto, propietario: $('pn').value.trim(), propietario_tel: pt ? DI.tel(pt) : '' };
     if (!$('asig-box').hidden) prop.asignado = $('asig').value;
+    // Si se cargó un propietario, queda también como ficha en Personas (se reutiliza si ya existe).
+    if (prop.propietario) {
+      try {
+        const norm = t => String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+        const fs = await ctx.fichas(), ya = fs.find(x => x.tipo === 'propietario' && ((prop.propietario_tel && x.telefono === prop.propietario_tel) || norm(x.nombre) === norm(prop.propietario)));
+        if (ya) prop.propietario_id = ya.id;
+        else { const nf = { tipo: 'propietario', nombre: prop.propietario, telefono: prop.propietario_tel || '', email: '', dni: '', domicilio: '', notas: '' }; if (prop.asignado) nf.asignado = prop.asignado; prop.propietario_id = (await ctx.agregarFicha(nf)).id; }
+      } catch (e) { /* la propiedad se guarda igual, sin ficha */ }
+    }
     try { await ctx.agregarProp(prop); }
     catch (err) { $('go').disabled = false; msg('No se pudo guardar (' + (err.code || err.message) + ').', 'er'); return; }
     location.href = 'dashboard.html';
