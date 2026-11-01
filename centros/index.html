@@ -128,7 +128,7 @@ $('n-go').onclick = async () => {
     await signOut(sa);
     msg('3/3 Dando el permiso de Dirección…');
     await setDoc(doc(db, 'users', em), { email: em, nombre_display: pn + ' ' + pa, rol_jerarquia: 'senior', activo: true, negocio_id: nid, creado: serverTimestamp() }); pasos.push('Permiso de Dirección cargado.');
-    msg('Listo.\n' + pasos.join('\n') + '\n\nPara pasarle al director/a:\n• Dirección: ' + location.origin + '/\n• Correo: ' + em + '\n• Clave temporal: ' + cl + '\n• Prueba: ' + dias + ' días desde su primer ingreso.', 'ok');
+    msg('Listo.\n' + pasos.join('\n') + '\n\nPara pasarle al director/a:\n• Dirección: ' + location.href.replace(/centros\/?(index\.html)?$/, '') + '\n• Correo: ' + em + '\n• Clave temporal: ' + cl + '\n• Prueba: ' + dias + ' días desde su primer ingreso.', 'ok');
     ['n-nom', 'n-id', 'n-pn', 'n-pa', 'n-em', 'n-cl'].forEach(i => $(i).value = ''); idAuto = true; listar();
   } catch (e) { msg('No se pudo completar: ' + (e.message || e.code) + (pasos.length ? '\nYa hecho: ' + pasos.join(' ') + ' (se puede repetir sin duplicar).' : ''), 'er'); }
   $('n-go').disabled = false;
