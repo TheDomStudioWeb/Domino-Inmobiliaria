@@ -51,3 +51,10 @@ Se entrega con su marca, su WhatsApp, datos propios por centro, ingreso real de 
 - «Confirmar ajuste» guarda el nuevo valor y el historial (fecha, desde, hasta, %), y ofrece el mensaje de WhatsApp al inquilino.
 - La app no decide qué ajuste corresponde legalmente: el agente elige los meses según el contrato.
 - Serie usada: constante IPC_SERIE en alquiler.js (hoy la de GBA, que puede estar atrasada). Para cambiarla, editar esa línea.
+
+## Seguimientos y «Para hoy»
+- Cada consulta y cada propiedad tiene un panel «Seguimiento»: fecha para volver a contactar y una nota de qué hacer. Atajos: mañana, en 3 días, en una semana.
+- La sección «Para hoy» (arriba, debajo de los resumen) junta los seguimientos que vencen en 7 días o menos, de consultas y propiedades, con los más atrasados primero. Se ven en rojo si son de hoy o atrasados.
+- «Ya lo hice» limpia el seguimiento y anota la fecha del último contacto. «Cerrar consulta» (solo en consultas) la saca de la lista.
+- Cada persona ve sus propios seguimientos; la Dirección ve los de todo el equipo. No usa reglas nuevas.
+- Son avisos dentro de la app: no llegan notificaciones al teléfono con la app cerrada. Para eso haría falta un plan de Firebase de pago (Blaze) y se puede sumar más adelante.

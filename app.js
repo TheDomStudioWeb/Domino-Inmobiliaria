@@ -21,7 +21,7 @@
       { id: 'f2', tipo: 'inquilino',   nombre: 'Diego Paz',     telefono: '', email: '', dni: '', domicilio: '',               notas: '' }
     ],
     leads: [
-      { id: 'l1', nombre: 'Laura Benítez', detalle: 'Quiere tasar una casa en Chacras' },
+      { id: 'l1', nombre: 'Laura Benítez', detalle: 'Quiere tasar una casa en Chacras', seg_fecha: mas(0), seg_nota: 'Llamar para coordinar la visita' },
       { id: 'l2', nombre: 'Familia Sosa',  detalle: 'Consulta por el departamento de Quinta Sección' }
     ]
   };

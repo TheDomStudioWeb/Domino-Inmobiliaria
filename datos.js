@@ -20,7 +20,7 @@ export async function iniciar() {
       actualizarProp: async (id, campos) => { const d = DI.load(); const p = d.props.find(x => x.id === id); if (p) Object.assign(p, campos); DI.save(d); },
       props: async () => DI.load().props, leads: async () => DI.load().leads,
       agregarProp: async (p) => { const d = DI.load(); d.props.unshift(Object.assign({ id: 'n' + hoy() }, p)); if (!DI.save(d)) { d.props[0].img = ''; if (!DI.save(d)) throw new Error('No se pudo guardar en este teléfono.'); } },
-      actualizarLead: async () => {},
+      actualizarLead: async (id, campos) => { const d = DI.load(); const x = d.leads.find(y => y.id === id); if (x) Object.assign(x, campos); DI.save(d); },
       fichas: async () => DI.load().fichas,
       agregarFicha: async (f) => { const d = DI.load(); const id = 'f' + hoy(); d.fichas.unshift(Object.assign({ id }, f)); DI.save(d); return { id }; },
       actualizarFicha: async (id, campos) => { const d = DI.load(); const f = d.fichas.find(x => x.id === id); if (f) Object.assign(f, campos); DI.save(d); },

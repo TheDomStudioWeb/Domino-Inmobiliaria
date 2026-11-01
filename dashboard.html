@@ -33,6 +33,9 @@
     <div class="kpi"><b id="k3">0</b><span>Captaciones nuevas</span></div>
   </div>
 
+  <h3 class="sec" id="hoy" hidden>Para hoy</h3>
+  <div class="venc" id="hoylista"></div>
+
   <h3 class="sec" id="propiedades">En gestión activa</h3>
   <div class="field" id="filtro-box" hidden><label for="filtro">Ver</label><select id="filtro"><option value="">Todo el equipo</option></select></div>
   <div class="carousel" id="props" tabindex="0" aria-label="Propiedades en gestión"></div>
@@ -78,6 +81,7 @@
 <script type="module">
 import { iniciar } from './datos.js';
 import { dinero, aMonto, panelAjuste, chipAjuste } from './alquiler.js';
+import { panelSeg, chipSeg } from './seguimiento.js';
 const $ = id => document.getElementById(id);
 const WAI = '<svg viewBox="0 0 24 24"><path d="M4 20l1.3-4.2A8 8 0 1 1 8.4 18.7z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-.8.8c-.9-.4-1.6-1.1-2-2l.8-.8-1-2z"/></svg>';
 const DI = window.DI;
@@ -90,6 +94,7 @@ async function pintar() {
   const nombres = {}; (ctx.personas || []).forEach(u => nombres[u.email] = u.nombre);
   const fx = {}; fichas.forEach(x => fx[x.id] = x);
   const f = $('filtro').value;
+  leads = leads.filter(x => !x.cerrado);
   if (f) { props = props.filter(p => p.asignado === f); leads = leads.filter(x => x.asignado === f); }
   const box = $('props'); box.innerHTML = ''; let nuevas = 0;
   props.forEach(p => {
@@ -98,7 +103,7 @@ async function pintar() {
     const im = document.createElement('div'); im.className = 'img'; im.setAttribute('role', 'img'); im.setAttribute('aria-label', p.titulo);
     if (p.img) im.style.backgroundImage = 'url("' + p.img.replace(/"/g, '%22') + '")';
     const b = document.createElement('div'); b.className = 'body';
-    b.innerHTML = '<h3>' + DI.esc(p.titulo) + '</h3><span class="chip">' + DI.esc(p.estado) + '</span>' + (function () { const k = DI.contrato(p.contrato_vence); return k ? '<span class="chip ' + k.k + '">Contrato · ' + k.t + '</span>' : ''; })() + (p.propietario ? '<p class="meta">Propietario: ' + DI.esc(p.propietario) + '</p>' : '') + (fx[p.inquilino_id] ? '<p class="meta">Inquilino: ' + DI.esc(fx[p.inquilino_id].nombre) + '</p>' : '') + (p.alq_monto ? '<p class="meta">Alquiler: ' + dinero(p.alq_monto) + (DI.proxAjuste(p) ? ' · ' + chipAjuste(DI, DI.proxAjuste(p)).t.toLowerCase() : '') + '</p>' : '') + (ctx.esSenior && p.asignado && nombres[p.asignado] ? '<p class="meta">A cargo de: ' + DI.esc(nombres[p.asignado]) + '</p>' : '');
+    b.innerHTML = '<h3>' + DI.esc(p.titulo) + '</h3><span class="chip">' + DI.esc(p.estado) + '</span>' + (function () { const k = DI.contrato(p.contrato_vence); return k ? '<span class="chip ' + k.k + '">Contrato · ' + k.t + '</span>' : ''; })() + (p.propietario ? '<p class="meta">Propietario: ' + DI.esc(p.propietario) + '</p>' : '') + (fx[p.inquilino_id] ? '<p class="meta">Inquilino: ' + DI.esc(fx[p.inquilino_id].nombre) + '</p>' : '') + (p.seg_fecha ? '<span class="chip ' + chipSeg(DI, p.seg_fecha).k + '">' + chipSeg(DI, p.seg_fecha).t + '</span>' : '') + (p.alq_monto ? '<p class="meta">Alquiler: ' + dinero(p.alq_monto) + (DI.proxAjuste(p) ? ' · ' + chipAjuste(DI, DI.proxAjuste(p)).t.toLowerCase() : '') + '</p>' : '') + (ctx.esSenior && p.asignado && nombres[p.asignado] ? '<p class="meta">A cargo de: ' + DI.esc(nombres[p.asignado]) + '</p>' : '');
     // Cambiar el estado de la operación. El Gestor no puede darla por cerrada.
     const sel = document.createElement('select'); sel.className = 'mini'; sel.setAttribute('aria-label', 'Estado de la operación');
     const est = DI.ESTADOS.filter(e => !(ctx.rol === 'asistente' && e === 'Cerrada'));
@@ -136,6 +141,7 @@ async function pintar() {
       try { await ctx.actualizarProp(p.id, campos); pintar(); } catch (err) { m.className = 'msg er c-m'; m.textContent = 'No se pudo guardar (' + (err.code || err.message) + ').'; }
     };
     b.appendChild(det);
+    b.appendChild(panelSeg({ DI, item: p, update: (c) => ctx.actualizarProp(p.id, c), alTerminar: () => pintar() }));
     if (p.alq_monto) b.appendChild(panelAjuste(p, { DI, ctx, alTerminar: () => pintar() }));
     const a = document.createElement('a'); a.className = 'btn ok'; a.target = '_blank'; a.rel = 'noopener';
     a.href = DI.wa('Hola' + (p.propietario ? ' ' + p.propietario : '') + ', te escribo desde ' + (ctx.demo ? 'DOMino Inmobiliaria' : ctx.nombre) + '. Reporte de tu propiedad «' + p.titulo + '»: ' + p.estado + '. ¡Seguimos avanzando!' + (ctx.firma ? '\n— ' + ctx.firma : ''), ctx.demo ? undefined : (p.propietario_tel || ''));
@@ -178,6 +184,18 @@ async function pintar() {
     r.appendChild(hecho); ab.appendChild(r);
   });
 
+  // Para hoy: seguimientos que vencen en 7 días o menos (consultas y propiedades), los más atrasados primero.
+  const tareas = [].concat(
+    leads.filter(x => x.seg_fecha && DI.dias(x.seg_fecha) <= 7).map(x => ({ it: x, tipo: 'Consulta', titulo: x.nombre, tel: x.telefono, up: (c) => ctx.actualizarLead(x.id, c) })),
+    props.filter(p => p.seg_fecha && DI.dias(p.seg_fecha) <= 7).map(p => ({ it: p, tipo: 'Propiedad', titulo: p.titulo, tel: p.propietario_tel, up: (c) => ctx.actualizarProp(p.id, c) }))
+  ).sort((a, b) => DI.dias(a.it.seg_fecha) - DI.dias(b.it.seg_fecha));
+  $('hoy').hidden = !tareas.length; const hb = $('hoylista'); hb.innerHTML = '';
+  tareas.forEach(t => {
+    const k = chipSeg(DI, t.it.seg_fecha), r = document.createElement('div'); r.className = 'lead';
+    r.innerHTML = '<div><h4>' + DI.esc(t.titulo) + '</h4><p>' + t.tipo + (t.it.seg_nota ? ' · ' + DI.esc(t.it.seg_nota) : '') + '</p></div><span class="chip ' + k.k + '">' + k.t + '</span>';
+    r.appendChild(panelSeg({ DI, item: t.it, update: t.up, alTerminar: () => pintar() })); hb.appendChild(r);
+  });
+
   const l = $('lista'); l.innerHTML = '';
   leads.forEach(x => {
     const r = document.createElement('div'); r.className = 'lead';
@@ -188,6 +206,8 @@ async function pintar() {
       as.onchange = async () => { if (!as.value) return; try { await ctx.actualizarLead(x.id, { asignado: as.value }); pintar(); } catch (err) { alert('No se pudo asignar (' + (err.code || err.message) + ').'); } };
       r.firstChild.appendChild(as);
     }
+    if (x.seg_fecha) { const k = chipSeg(DI, x.seg_fecha); r.firstChild.insertAdjacentHTML('beforeend', '<span class="chip ' + k.k + '">' + k.t + '</span>' + (x.seg_nota ? '<p class="meta">' + DI.esc(x.seg_nota) + '</p>' : '')); }
+    r.appendChild(panelSeg({ DI, item: x, cerrable: true, update: (c) => ctx.actualizarLead(x.id, c), alTerminar: () => pintar() }));
     const a = document.createElement('a'); a.className = 'btn line sm'; a.target = '_blank'; a.rel = 'noopener';
     a.href = DI.wa('Hola ' + x.nombre + ', te escribo desde ' + (ctx.demo ? 'DOMino Inmobiliaria' : ctx.nombre) + ' por tu consulta: ' + x.detalle + '.' + (ctx.firma ? '\n— ' + ctx.firma : ''), ctx.demo ? undefined : (x.telefono || ''));
     a.textContent = 'Contactar'; r.appendChild(a); l.appendChild(r);
