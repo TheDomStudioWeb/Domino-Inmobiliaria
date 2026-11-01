@@ -1,5 +1,5 @@
 /* DOMino Inmobiliaria · service worker: la app abre sin conexión. Subir VERSION al publicar cambios. */
-var VERSION = 'domino-inmo-v3';
+var VERSION = 'domino-inmo-v4';
 var ARCHIVOS = [
   './', 'index.html', 'dashboard.html', 'captura.html', 'equipo.html', 'app.css', 'app.js', 'fb.js', 'datos.js', 'manifest.json',
   'imagenes/logo-domino.png', 'imagenes/icon-192.png', 'imagenes/icon-512.png', 'imagenes/favicon-64.png',
@@ -16,15 +16,15 @@ self.addEventListener('activate', function (e) {
   }).then(function () { return self.clients.claim(); }));
 });
 
-// Archivos propios: primero la copia guardada, y se actualiza en segundo plano. Lo demás (tipografías, WhatsApp) va directo a la red.
+// Con conexión, siempre la versión más nueva (así las pantallas y sus módulos nunca quedan de versiones distintas).
+// Sin conexión, la copia guardada. Lo ajeno (tipografías, WhatsApp) va directo a la red.
 self.addEventListener('fetch', function (e) {
   var r = e.request;
   if (r.method !== 'GET' || new URL(r.url).origin !== location.origin) return;
-  e.respondWith(caches.match(r).then(function (hit) {
-    var red = fetch(r).then(function (res) {
+  e.respondWith(
+    fetch(r.url, { cache: 'no-cache', credentials: 'same-origin' }).then(function (res) {
       if (res && res.ok) { var copia = res.clone(); caches.open(VERSION).then(function (c) { c.put(r, copia); }); }
       return res;
-    }).catch(function () { return hit; });
-    return hit || red;
-  }));
+    }).catch(function () { return caches.match(r).then(function (hit) { return hit || caches.match('index.html'); }); })
+  );
 });
