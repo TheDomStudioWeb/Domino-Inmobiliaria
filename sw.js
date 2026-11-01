@@ -1,5 +1,5 @@
 /* DOMino Inmobiliaria · service worker: la app abre sin conexión. Subir VERSION al publicar cambios. */
-var VERSION = 'domino-inmo-v4';
+var VERSION = 'domino-inmo-v5';
 var ARCHIVOS = [
   './', 'index.html', 'dashboard.html', 'captura.html', 'equipo.html', 'app.css', 'app.js', 'fb.js', 'datos.js', 'manifest.json',
   'imagenes/logo-domino.png', 'imagenes/icon-192.png', 'imagenes/icon-512.png', 'imagenes/favicon-64.png',

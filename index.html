@@ -51,8 +51,16 @@ $('f').addEventListener('submit', async e => {
   const em = $('u').value.trim(), cl = $('c').value;
   if (!em || !cl) return msg('Complete el correo y la contraseña.', 'er');
   $('go').disabled = true; msg('Ingresando…');
-  try { await setPersistence(auth, browserLocalPersistence); await signInWithEmailAndPassword(auth, em, cl); location.replace('dashboard.html'); }
-  catch (err) { $('go').disabled = false; msg(err.code === 'auth/too-many-requests' ? 'Demasiados intentos. Espere unos minutos o restablezca la contraseña.' : 'Correo o contraseña incorrectos.', 'er'); }
+  const espera = new Promise((_, no) => setTimeout(() => no({ code: 'tiempo-agotado' }), 20000));
+  try { await Promise.race([signInWithEmailAndPassword(auth, em, cl), espera]); location.replace('dashboard.html'); }
+  catch (err) {
+    $('go').disabled = false;
+    const c = err && err.code || 'error';
+    msg(c === 'auth/too-many-requests' ? 'Demasiados intentos. Espere unos minutos o restablezca la contraseña.'
+      : c === 'tiempo-agotado' || c === 'auth/network-request-failed' ? 'No se pudo conectar con el servidor (' + c + '). Revise la conexión, pruebe con Wi-Fi y vuelva a intentar.'
+      : c === 'auth/invalid-credential' || c === 'auth/wrong-password' || c === 'auth/user-not-found' || c === 'auth/invalid-email' ? 'Correo o contraseña incorrectos.'
+      : 'No se pudo ingresar (' + c + ').', 'er');
+  }
 });
 $('olvide').onclick = async e => {
   e.preventDefault(); const em = $('u').value.trim();
