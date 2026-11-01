@@ -20,6 +20,7 @@ export async function iniciar() {
       actualizarProp: async (id, campos) => { const d = DI.load(); const p = d.props.find(x => x.id === id); if (p) Object.assign(p, campos); DI.save(d); },
       props: async () => DI.load().props, leads: async () => DI.load().leads,
       agregarProp: async (p) => { const d = DI.load(); d.props.unshift(Object.assign({ id: 'n' + hoy() }, p)); if (!DI.save(d)) { d.props[0].img = ''; if (!DI.save(d)) throw new Error('No se pudo guardar en este teléfono.'); } },
+      actualizarLead: async () => {},
       agregarLead: async (l) => { const d = DI.load(); d.leads.unshift(Object.assign({ id: 'l' + hoy() }, l)); DI.save(d); },
       reiniciar: async () => DI.reset(),
       salir: async () => { salirDemo(); location.href = 'index.html'; }
@@ -49,6 +50,7 @@ export async function iniciar() {
     actualizarProp: (id, campos) => updateDoc(doc(db, ...base, 'props', id), campos),
     equipo: async () => { const r = await getDocs(query(collection(db, 'users'), where('negocio_id', '==', s.negocioId))), f = []; r.forEach(d => { const u = d.data(); if (u.activo !== false) f.push({ email: d.id, nombre: u.nombre_display || d.id, rol: u.rol_jerarquia }); }); return f; },
     agregarLead: (l) => addDoc(collection(db, ...base, 'leads'), nuevo(l)),
+    actualizarLead: (id, campos) => updateDoc(doc(db, ...base, 'leads', id), campos),
     reiniciar: async () => {},
     salir: async () => { await salirConAviso(''); }
   };

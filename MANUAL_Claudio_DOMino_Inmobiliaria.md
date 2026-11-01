@@ -26,3 +26,5 @@ Se entrega con su marca, su WhatsApp, datos propios por centro, ingreso real de 
 - Cada inmobiliaria tiene 1 semana de prueba desde el primer ingreso de su Dirección; el panel muestra «Prueba hasta…».
 - «Registrar consulta» (panel) carga un lead con su WhatsApp; «Contactar» abre el chat. En cada propiedad se puede anotar el propietario y su WhatsApp, y «Notificar al propietario» le abre el chat con el reporte armado.
 - Los datos de una inmobiliaria nunca se ven desde otra.
+- La Dirección puede asignar cada consulta a una persona del equipo (al registrarla o después, con «Asignar a…»). Cada persona ve solo las consultas que registró o que le asignaron.
+- Para salir de la cuenta, se toca el círculo con las iniciales (arriba a la derecha del panel).

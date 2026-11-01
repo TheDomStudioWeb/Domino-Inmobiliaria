@@ -45,13 +45,15 @@
       <div class="field"><label for="ln">Nombre</label><input id="ln" autocomplete="off" placeholder="Nombre y apellido"></div>
       <div class="field"><label for="lt">WhatsApp (con código de área, sin 0 ni 15)</label><input id="lt" inputmode="tel" autocomplete="off" placeholder="2615551234"></div>
       <div class="field"><label for="ld">Qué consulta</label><input id="ld" autocomplete="off" placeholder="Ej.: Quiere tasar una casa en Chacras"></div>
+      <div class="field" id="lasig-box" hidden><label for="lasig">A cargo de</label><select id="lasig"></select></div>
       <button class="btn" type="submit">Guardar consulta</button><p class="msg" id="lm" role="status"></p>
     </form>
   </details>
 
+  <p class="foot" id="salir-ayuda">Para salir, toque sus iniciales (arriba a la derecha).</p>
   <p class="foot" id="equipo-link" hidden><a href="equipo.html">Gestionar el equipo</a> · <a href="centros/" id="centros-link" hidden>Alta de inmobiliarias</a></p>
   <button class="reset" id="reset" type="button" hidden>Restablecer datos de ejemplo</button>
-  <p class="foot">Demostración: los avisos de WhatsApp llegan al estudio que desarrolló la app.<br>Desarrollado por <a href="https://thedomstudioweb.github.io/" target="_blank" rel="noopener">The DOM Studio Web</a> · WhatsApp 261-3431216 · thedomstudioweb@gmail.com</p>
+  <p class="foot"><span id="demo-nota" hidden>Demostración: los avisos de WhatsApp llegan al estudio que desarrolló la app.<br></span>Desarrollado por <a href="https://thedomstudioweb.github.io/" target="_blank" rel="noopener">The DOM Studio Web</a> · WhatsApp 261-3431216 · thedomstudioweb@gmail.com</p>
 </main>
 
 <nav class="bottom" aria-label="Principal">
@@ -111,7 +113,13 @@ async function pintar() {
   const l = $('lista'); l.innerHTML = '';
   leads.forEach(x => {
     const r = document.createElement('div'); r.className = 'lead';
-    r.innerHTML = '<div><h4>' + DI.esc(x.nombre) + '</h4><p>' + DI.esc(x.detalle) + '</p></div>';
+    r.innerHTML = '<div><h4>' + DI.esc(x.nombre) + '</h4><p>' + DI.esc(x.detalle) + '</p>' + (ctx.esSenior && x.asignado && nombres[x.asignado] ? '<p class="meta">A cargo de: ' + DI.esc(nombres[x.asignado]) + '</p>' : '') + '</div>';
+    if (ctx.esSenior && ctx.personas && ctx.personas.length > 1) {
+      const as = document.createElement('select'); as.className = 'mini'; as.style.marginTop = '8px'; as.setAttribute('aria-label', 'Asignar consulta a');
+      as.innerHTML = '<option value="">Asignar a…</option>' + ctx.personas.filter(u => u.email !== x.asignado).map(u => '<option value="' + DI.esc(u.email) + '">' + DI.esc(u.nombre) + '</option>').join('');
+      as.onchange = async () => { if (!as.value) return; try { await ctx.actualizarLead(x.id, { asignado: as.value }); pintar(); } catch (err) { alert('No se pudo asignar (' + (err.code || err.message) + ').'); } };
+      r.firstChild.appendChild(as);
+    }
     const a = document.createElement('a'); a.className = 'btn line sm'; a.target = '_blank'; a.rel = 'noopener';
     a.href = DI.wa('Hola ' + x.nombre + ', te escribo desde ' + (ctx.demo ? 'DOMino Inmobiliaria' : ctx.nombre) + ' por tu consulta: ' + x.detalle + '.', ctx.demo ? undefined : (x.telefono || ''));
     a.textContent = 'Contactar'; r.appendChild(a); l.appendChild(r);
@@ -122,12 +130,12 @@ async function pintar() {
 
 (async () => {
   ctx = await iniciar(); if (!ctx) return;
-  if (ctx.esSenior) { try { ctx.personas = await ctx.equipo(); } catch (e) { ctx.personas = []; } if (ctx.personas.length > 1) { $('filtro').insertAdjacentHTML('beforeend', ctx.personas.map(u => '<option value="' + DI.esc(u.email) + '">' + DI.esc(u.nombre) + ' · ' + (DI.ROLES[u.rol] || '') + '</option>').join('')); $('filtro-box').hidden = false; $('filtro').onchange = pintar; } }
+  if (ctx.esSenior) { try { ctx.personas = await ctx.equipo(); } catch (e) { ctx.personas = []; } if (ctx.personas.length > 1) { $('filtro').insertAdjacentHTML('beforeend', ctx.personas.map(u => '<option value="' + DI.esc(u.email) + '">' + DI.esc(u.nombre) + ' · ' + (DI.ROLES[u.rol] || '') + '</option>').join('')); $('filtro-box').hidden = false; $('filtro').onchange = pintar; $('lasig').innerHTML = ctx.personas.map(u => '<option value="' + DI.esc(u.email) + '"' + (u.email === ctx.mail ? ' selected' : '') + '>' + DI.esc(u.nombre) + ' · ' + (DI.ROLES[u.rol] || '') + '</option>').join(''); $('lasig-box').hidden = false; } }
   $('salir').textContent = ctx.iniciales; $('salir').title = 'Salir';
   document.querySelector('.top small').textContent = ctx.demo ? 'Inmobiliaria · demostración' : ctx.nombre + ' · ' + (DI.ROLES[ctx.rol] || '');
   if (!ctx.esSenior && !ctx.demo) { $('propiedades').textContent = 'Mis propiedades'; $('leads').textContent = 'Mis consultas · por contactar'; }
   if (ctx.vence) { const d = Math.max(0, Math.ceil((ctx.vence - Date.now()) / 86400000)); const a = $('aviso'); a.hidden = false; a.className = 'msg'; a.textContent = 'Prueba hasta el ' + new Date(ctx.vence).toLocaleDateString('es-AR') + ' (' + d + (d === 1 ? ' día' : ' días') + ').'; }
-  if (ctx.demo) $('reset').hidden = false;
+  if (ctx.demo) { $('reset').hidden = false; $('demo-nota').hidden = false; }
   if (ctx.esSenior) $('equipo-link').hidden = false;
   if (ctx.esSuperadmin) { $('equipo-link').hidden = false; $('centros-link').hidden = false; }
   $('salir').onclick = () => ctx.salir();
@@ -144,7 +152,7 @@ async function pintar() {
     e.preventDefault(); const m = $('lm'), n = $('ln').value.trim(), d = $('ld').value.trim(), t = $('lt').value.trim();
     if (n.length < 2 || d.length < 2) { m.className = 'msg er'; m.textContent = 'Complete el nombre y la consulta.'; return; }
     if (t && !DI.tel(t)) { m.className = 'msg er'; m.textContent = 'Revise el WhatsApp: código de área y número, sin 0 ni 15.'; return; }
-    try { await ctx.agregarLead({ nombre: n, detalle: d, telefono: t ? DI.tel(t) : '' }); } catch (err) { m.className = 'msg er'; m.textContent = 'No se pudo guardar (' + (err.code || err.message) + ').'; return; }
+    try { const nl = { nombre: n, detalle: d, telefono: t ? DI.tel(t) : '' }; if (!$('lasig-box').hidden) nl.asignado = $('lasig').value; await ctx.agregarLead(nl); } catch (err) { m.className = 'msg er'; m.textContent = 'No se pudo guardar (' + (err.code || err.message) + ').'; return; }
     $('fl').reset(); m.className = 'msg ok'; m.textContent = 'Consulta guardada.'; $('nuevo-lead').open = false; pintar();
   });
   pintar();
