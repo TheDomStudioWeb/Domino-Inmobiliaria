@@ -18,6 +18,10 @@ Micro app de The DOM Studio Web para inmobiliarias: el agente capta propiedades 
 ## Sitio web de demostración
 En `/sitio/`: tasación online (arma un mensaje de WhatsApp), pasos, propiedades de ejemplo y datos de contacto a personalizar.
 
+## Direcciones
+- Aplicación: https://domino-inmobiliaria.web.app (se instala desde el menú del navegador).
+- Demostración: https://thedomstudioweb.github.io/Domino-Inmobiliaria/
+
 ## Para una inmobiliaria real
 Se entrega con su marca, su WhatsApp, datos propios por centro, ingreso real de agentes y prueba de 1 semana. Consultas: The DOM Studio Web · WhatsApp 261-3431216 · thedomstudioweb@gmail.com
 

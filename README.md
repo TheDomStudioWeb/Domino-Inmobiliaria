@@ -32,7 +32,9 @@ Desarrollado por [The DOM Studio Web](https://thedomstudioweb.github.io/) · Wha
 - Propiedades y leads son inventados; las fotos son de banco de imágenes.
 
 ## Publicar
-GitHub Pages: Settings → Pages → Deploy from a branch → `main` / root. Al cambiar archivos de la app, subir también `VERSION` en `sw.js`.
+- **Aplicación (real):** https://domino-inmobiliaria.web.app (Firebase Hosting). Cada cambio que llega a `main` se publica solo con GitHub Actions.
+- **Demostración / sitio:** GitHub Pages, https://thedomstudioweb.github.io/Domino-Inmobiliaria/ (carpeta `/sitio/` para el sitio comercial).
+- Al cambiar archivos de la app, subir también `VERSION` en `sw.js`.
 
 ## Próximos pasos (producto real)
 Ingreso real y datos por centro (Firebase Auth + Firestore), alta de centros con prueba de 1 semana, roles administrador/agente/propietario/inquilino, portal del cliente, documentos, vencimientos y ajustes de alquiler, agenda de visitas. Reutiliza módulos de DOMino Profesional, Veterinaria y Bienestar.
