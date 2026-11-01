@@ -14,7 +14,7 @@
       { id: 'p1', titulo: 'Residencia en Vistalba',        estado: '3 visitas esta semana', img: 'imagenes/house-1.webp' },
       { id: 'p2', titulo: 'Departamento en Quinta Sección', estado: '1 oferta recibida',     img: 'imagenes/house-2.webp' },
       { id: 'p3', titulo: 'Lote en barrio privado',         estado: 'En promoción inicial',  img: 'imagenes/lote.webp' },
-      { id: 'p4', titulo: 'Casa con pileta en Luján',       estado: 'Contrato en revisión',  img: 'imagenes/house-4.webp', operacion: 'Alquiler', propietario: 'Marta Quiroga', propietario_id: 'f1', inquilino_id: 'f2', contrato_inicio: mas(-320), contrato_vence: mas(45) }
+      { id: 'p4', titulo: 'Casa con pileta en Luján',       estado: 'Contrato en revisión',  img: 'imagenes/house-4.webp', operacion: 'Alquiler', propietario: 'Marta Quiroga', propietario_id: 'f1', inquilino_id: 'f2', contrato_inicio: mas(-320), contrato_vence: mas(45), alq_monto: 420000, alq_ajuste_meses: 3, alq_indice: 'IPC', alq_ultimo_ajuste: mas(-88) }
     ],
     fichas: [
       { id: 'f1', tipo: 'propietario', nombre: 'Marta Quiroga', telefono: '', email: '', dni: '', domicilio: 'Luján de Cuyo', notas: 'Prefiere que la llamen por la tarde.' },
@@ -47,6 +47,17 @@
     if (n === 0) return { t: 'Vence hoy', k: 'er', aviso: true, n: n };
     if (n <= 60) return { t: 'Vence en ' + n + (n === 1 ? ' día' : ' días'), k: 'warn', aviso: true, n: n };
     return { t: 'Vigente hasta el ' + D.fecha(iso), k: 'ok', aviso: false, n: n };
+  };
+  // Suma meses a una fecha AAAA-MM-DD (si el día no existe en el mes de llegada, queda en el último día).
+  D.sumarMeses = function (iso, n) {
+    var p = String(iso || '').split('-'); if (p.length !== 3) return '';
+    var y = +p[0], m = +p[1] - 1 + n, d = +p[2], f = new Date(y, m, 1), ult = new Date(f.getFullYear(), f.getMonth() + 1, 0).getDate();
+    f.setDate(Math.min(d, ult)); return f.getFullYear() + '-' + ('0' + (f.getMonth() + 1)).slice(-2) + '-' + ('0' + f.getDate()).slice(-2);
+  };
+  // Próximo ajuste del alquiler: último ajuste (o inicio del contrato) + período. '' si no hay período o fecha base.
+  D.proxAjuste = function (p) {
+    var per = Number(p.alq_ajuste_meses) || 0, base = p.alq_ultimo_ajuste || p.contrato_inicio;
+    return per > 0 && base ? D.sumarMeses(base, per) : '';
   };
   D.save = function (d) { try { localStorage.setItem(KEY, JSON.stringify(d)); return true; } catch (e) { return false; } };
   D.reset = function () { try { localStorage.removeItem(KEY); sessionStorage.removeItem('domino_foto'); } catch (e) {} };

@@ -126,11 +126,13 @@ select.mini{width:100%;min-height:42px;margin:0 0 10px;padding:0 10px;background
 .ficha form{margin-top:6px;padding-top:14px;border-top:1px solid #2a2820}
 .btn.dan{background:transparent;border-color:var(--er);color:var(--er)}
 .btn.dan:hover{background:var(--er);color:#0A0A0A}
-.card .contrato{padding:10px 12px;border:1px solid #3a372c;border-radius:4px;background:var(--panel-2);display:grid;gap:8px}
-.card .contrato summary{cursor:pointer;font:600 .72rem/1.3 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
-.card .contrato .field{margin:8px 0 0}
-.card .contrato .field input,.card .contrato .field select{min-height:46px}
+.card .contrato,.lead .contrato{padding:10px 12px;border:1px solid #3a372c;border-radius:4px;background:var(--panel-2);display:grid;gap:8px}
+.card .contrato summary,.lead .contrato summary{cursor:pointer;font:600 .72rem/1.3 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+.card .contrato .field,.lead .contrato .field{margin:8px 0 0}
+.card .contrato .field input,.card .contrato .field select,.lead .contrato .field input,.lead .contrato .field select{min-height:46px}
 .venc{display:grid;gap:10px}
 .venc .lead{align-items:flex-start;flex-direction:column}
 .venc .acc{display:flex;gap:8px;flex-wrap:wrap}
 @media (max-width:380px){.tab{min-width:70px}}
+.venc .contrato{width:100%}
+.contrato .meta{font-size:.8rem;color:var(--mut)}

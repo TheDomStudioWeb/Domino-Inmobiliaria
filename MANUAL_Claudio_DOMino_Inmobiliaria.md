@@ -42,3 +42,12 @@ Se entrega con su marca, su WhatsApp, datos propios por centro, ingreso real de 
 - **Contratos por vencer:** el panel lista los contratos que vencen en 90 días o menos (o ya vencidos) y avisa arriba si alguno vence en 30 días o menos. Cada uno tiene «Avisar al inquilino» y «Avisar al propietario», que abren WhatsApp con el mensaje armado.
 - Cada persona ve solo las fichas que cargó o que se le asignaron; la Dirección ve todas.
 - Todavía no guarda documentos (DNI, escrituras, contratos escaneados): por ahora la ficha guarda solo datos, fechas y notas.
+
+## Alquileres y ajustes por IPC
+- En cada propiedad en alquiler, dentro de «Contrato», se carga: alquiler actual, ajuste cada 3/4/6/12 meses e índice acordado (IPC, porcentaje fijo u otro).
+- El próximo ajuste = último ajuste (o inicio del contrato) + período. Cuando faltan 30 días o menos aparece la sección «Ajustes de alquiler» en el panel.
+- «Traer IPC» consulta la API pública de series de tiempo (datos.gob.ar, INDEC) y muestra los últimos meses con casillas; por defecto marca los 3 últimos y acumula multiplicando (no sumando). La pantalla indica la serie y el último mes disponible; si la serie está atrasada avisa y se carga el porcentaje a mano.
+- Si la consulta falla (sin internet o bloqueo), se escribe el porcentaje a mano: la app calcula el nuevo alquiler y el agente puede corregirlo.
+- «Confirmar ajuste» guarda el nuevo valor y el historial (fecha, desde, hasta, %), y ofrece el mensaje de WhatsApp al inquilino.
+- La app no decide qué ajuste corresponde legalmente: el agente elige los meses según el contrato.
+- Serie usada: constante IPC_SERIE en alquiler.js (hoy la de GBA, que puede estar atrasada). Para cambiarla, editar esa línea.
