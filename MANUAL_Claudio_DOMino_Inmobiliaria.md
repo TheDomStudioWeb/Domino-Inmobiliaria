@@ -58,3 +58,13 @@ Se entrega con su marca, su WhatsApp, datos propios por centro, ingreso real de 
 - «Ya lo hice» limpia el seguimiento y anota la fecha del último contacto. «Cerrar consulta» (solo en consultas) la saca de la lista.
 - Cada persona ve sus propios seguimientos; la Dirección ve los de todo el equipo. No usa reglas nuevas.
 - Son avisos dentro de la app: no llegan notificaciones al teléfono con la app cerrada. Para eso haría falta un plan de Firebase de pago (Blaze) y se puede sumar más adelante.
+
+## Fotos adicionales por propiedad
+- Cada propiedad tiene una portada (la foto de la captación) y puede sumar hasta 8 fotos más en el panel «Fotos». Para quitar una, se toca la ✕ y se vuelve a tocar «Quitar».
+- Las fotos adicionales se guardan reducidas, una por documento, sin usar Storage. Solo las ve quien ve la propiedad. Cuando se active el plan Blaze con Storage, se pueden pasar ahí sin cambiar nada para el usuario.
+- Requiere publicar las reglas de Firestore actualizadas (subcolección «fotos»).
+
+## Herramientas (pestaña «Herramientas»)
+- **Hoja unificada A4 (DNI):** frente y dorso de un documento en una sola hoja A4, para imprimir o guardar como imagen.
+- **Unificador de archivos en PDF:** junta fotos, PDF y Word (.docx) en un solo PDF, en el orden elegido, con giro de páginas. No admite Excel, PowerPoint, ZIP ni audio. Todo se arma en el teléfono: no se sube nada a ningún servidor.
+- **Copia de seguridad (solo Dirección):** descarga una planilla de Excel con cuatro hojas: Propiedades, Personas, Consultas y Ajustes de alquiler. No incluye fotos.

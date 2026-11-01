@@ -12,6 +12,7 @@ Desarrollado por [The DOM Studio Web](https://thedomstudioweb.github.io/) · Wha
 | `dashboard.html` | Panel: resumen, propiedades en gestión, leads, aviso al propietario por WhatsApp |
 | `captura.html` | Captación: foto con la cámara, dirección y tipo de operación |
 | `equipo.html` | Alta y baja de personas del equipo (solo Dirección) |
+| `herramientas.html` | Hoja A4 de DNI, unificador de PDF y copia de seguridad |
 | `personas.html` | Fichas de propietarios e inquilinos: datos, notas, búsqueda y contacto por WhatsApp |
 | `config.html` | Nombre comercial y WhatsApp de la inmobiliaria (solo Dirección) |
 | `firebase.json` / `.firebaserc` | Publicación en Firebase Hosting (domino-inmobiliaria.web.app) |

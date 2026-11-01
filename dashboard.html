@@ -74,6 +74,7 @@
     </label>
     <input class="sr" type="file" id="foto" accept="image/*" capture="environment">
     <a class="tab" href="#leads">Leads</a>
+    <a class="tab ch" href="herramientas.html">Herramientas</a>
   </div>
 </nav>
 
@@ -82,6 +83,7 @@
 import { iniciar } from './datos.js';
 import { dinero, aMonto, panelAjuste, chipAjuste } from './alquiler.js';
 import { panelSeg, chipSeg } from './seguimiento.js';
+import { panelFotos } from './fotos.js';
 const $ = id => document.getElementById(id);
 const WAI = '<svg viewBox="0 0 24 24"><path d="M4 20l1.3-4.2A8 8 0 1 1 8.4 18.7z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-.8.8c-.9-.4-1.6-1.1-2-2l.8-.8-1-2z"/></svg>';
 const DI = window.DI;
@@ -141,6 +143,7 @@ async function pintar() {
       try { await ctx.actualizarProp(p.id, campos); pintar(); } catch (err) { m.className = 'msg er c-m'; m.textContent = 'No se pudo guardar (' + (err.code || err.message) + ').'; }
     };
     b.appendChild(det);
+    b.appendChild(panelFotos({ DI, ctx, p }));
     b.appendChild(panelSeg({ DI, item: p, update: (c) => ctx.actualizarProp(p.id, c), alTerminar: () => pintar() }));
     if (p.alq_monto) b.appendChild(panelAjuste(p, { DI, ctx, alTerminar: () => pintar() }));
     const a = document.createElement('a'); a.className = 'btn ok'; a.target = '_blank'; a.rel = 'noopener';

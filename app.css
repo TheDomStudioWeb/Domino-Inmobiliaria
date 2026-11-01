@@ -136,3 +136,37 @@ select.mini{width:100%;min-height:42px;margin:0 0 10px;padding:0 10px;background
 @media (max-width:380px){.tab{min-width:70px}}
 .venc .contrato{width:100%}
 .contrato .meta{font-size:.8rem;color:var(--mut)}
+
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px;margin-top:8px}
+.gal .meta{grid-column:1/-1}
+.gal-it{position:relative;aspect-ratio:1;border-radius:4px;background:#222 center/cover no-repeat;border:1px solid #3a372c}
+.gal-x{position:absolute;top:4px;right:4px;min-width:32px;min-height:32px;padding:0 8px;border-radius:999px;border:0;background:#000b;color:#F4F1EA;font:600 .7rem var(--sans);cursor:pointer}
+.gal-x.on{background:var(--er);color:#fff}
+.tools{display:flex;flex-direction:column;gap:16px;margin-top:6px}
+.tool{background:var(--panel);border:1px solid #2a2820;border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.tool h3{margin:0;font:600 1rem var(--serif);color:var(--gold)}
+.tool p{margin:0;font-size:.85rem;color:var(--mut)}
+.tool label:not(.btn){font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+.tool input[type=file]{width:100%;color:var(--tx)}
+.tool canvas{width:100%;max-width:260px;height:auto;align-self:center;background:#fff;border-radius:2px}
+.tool .seg{display:flex;gap:8px;flex-wrap:wrap}
+.tool-out.mal{border-left:3px solid var(--er);padding-left:12px;font-size:.85rem}
+.pdf-cab{display:flex;justify-content:space-between;align-items:center;margin:8px 0}
+.pdf-lista{display:flex;flex-direction:column;gap:8px}
+.pdf-it{display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid #3a372c;border-radius:6px;padding:8px}
+.pdf-th{flex:none;width:44px;height:56px;border-radius:4px;background:#fff center/cover no-repeat;border:1px solid #3a372c}
+.pdf-th-t{display:grid;place-items:center;background:var(--panel);color:var(--gold);font-size:.62rem;font-weight:800;letter-spacing:.08em}
+.pdf-nm{flex:1;min-width:0}.pdf-nm b{display:block;font-size:.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pdf-nm small{color:var(--mut);font-size:.72rem}
+.pdf-ac{display:flex;gap:6px}
+.pdf-ac button{width:36px;height:36px;border-radius:6px;border:1px solid #3a372c;background:var(--panel);color:var(--tx);cursor:pointer}
+.pdf-ac button:disabled{opacity:.3}
+.pdf-ac .pdf-del{color:var(--er)}
+.pdf-res{border:1px solid var(--ok);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:4px}
+@media (max-width:520px){.pdf-it{flex-wrap:wrap}.pdf-ac{width:100%;justify-content:flex-end}}
+.tab.ch{min-width:0;padding:0 6px;letter-spacing:.06em;font-size:.66rem}
+@media (max-width:420px){.tab{min-width:0;padding:0 8px;letter-spacing:.08em}}
+.leads .lead{flex-wrap:wrap}
+.leads .lead>div:first-child{flex:1 1 180px;min-width:0}
+.leads .lead .contrato{flex:1 1 100%;min-width:0}
+.venc .lead{min-width:0}.venc .lead>*{max-width:100%}
+.leads .lead .btn{width:auto;flex:none}

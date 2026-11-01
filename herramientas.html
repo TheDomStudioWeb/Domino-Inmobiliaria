@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DOMino Inmobiliaria · Herramientas</title>
+<meta name="theme-color" content="#0A0A0A">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="imagenes/favicon-64.png">
+<link rel="apple-touch-icon" href="imagenes/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="page">
+  <div class="head">
+    <a class="back" href="dashboard.html" aria-label="Volver al panel"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <h2>Herramientas</h2>
+  </div>
+  <p class="meta" style="margin-bottom:12px">Funcionan en este teléfono: los documentos que cargue acá no se suben ni se guardan en ningún servidor.</p>
+  <p class="msg" id="aviso" role="status" hidden></p>
+
+  <div class="tools">
+    <section class="tool" id="tool-hoja">
+      <h3>Hoja unificada A4 (DNI)</h3>
+      <p>Frente y dorso de un documento en una sola hoja, lista para imprimir o guardar como imagen.</p>
+      <label class="btn line sm" style="cursor:pointer">Elegir foto del frente<input class="sr" type="file" id="hoja-frente" accept="image/*"></label><p id="n-frente"></p>
+      <label class="btn line sm" style="cursor:pointer">Elegir foto del dorso<input class="sr" type="file" id="hoja-dorso" accept="image/*"></label><p id="n-dorso"></p>
+      <canvas id="hoja-canvas" width="595" height="842" aria-label="Vista previa de la hoja A4"></canvas>
+      <div class="seg">
+        <button type="button" class="btn sm" id="hoja-descargar">Guardar imagen</button>
+        <button type="button" class="btn line sm" id="hoja-imprimir">Imprimir</button>
+        <button type="button" class="btn line sm" id="hoja-limpiar">Limpiar</button>
+      </div>
+    </section>
+
+    <section class="tool" id="tool-pdf">
+      <h3>Unificador de archivos en PDF</h3>
+      <p>Fotos, PDF y Word en un solo PDF, en el orden que elija. Sirve para armar el legajo del propietario o del inquilino.</p>
+      <div class="seg">
+        <label class="btn sm" style="cursor:pointer">Elegir archivos<input class="sr" type="file" id="pdf-archivos" accept="image/*,application/pdf,.pdf,.docx,.doc" multiple></label>
+        <label class="btn line sm" style="cursor:pointer">Sacar una foto<input class="sr" type="file" id="pdf-camara" accept="image/*" capture="environment"></label>
+      </div>
+      <p>Se pueden unir fotos, PDF y Word (.docx). Excel, PowerPoint, ZIP y audio no: conviene pasarlos a PDF desde su programa.</p>
+      <div class="tool-out" id="pdf-aviso" aria-live="polite"></div>
+      <div id="pdf-lista-wrap" hidden>
+        <div class="pdf-cab"><b id="pdf-cuenta"></b><button type="button" class="btn line sm" id="pdf-limpiar">Vaciar lista</button></div>
+        <div class="pdf-lista" id="pdf-lista"></div>
+        <div class="field"><label for="pdf-nombre">Nombre del PDF</label><input id="pdf-nombre" autocomplete="off" placeholder="Ej.: Documentación Rojas"></div>
+        <div class="seg"><button type="button" class="btn sm" id="pdf-generar">Generar PDF</button></div>
+        <div class="tool-out" id="pdf-nota" aria-live="polite"></div>
+      </div>
+      <div class="pdf-res" id="pdf-resultado" hidden>
+        <b style="color:var(--ok)">✓ PDF listo</b><span id="pdf-res-nombre"></span><small id="pdf-res-info" style="color:var(--mut)"></small>
+        <div class="seg"><button type="button" class="btn sm" id="pdf-guardar">Guardar</button><button type="button" class="btn line sm" id="pdf-compartir">Compartir</button></div>
+      </div>
+    </section>
+
+    <section class="tool" id="tool-respaldo" hidden>
+      <h3>Copia de seguridad</h3>
+      <p>Descarga en una planilla de Excel todas las propiedades, personas, consultas y ajustes de alquiler de la inmobiliaria. Las fotos no se incluyen. Solo la Dirección ve esta opción.</p>
+      <div class="seg"><button type="button" class="btn sm" id="resp-go">Descargar planilla</button></div>
+      <p class="msg" id="resp-m" role="status"></p>
+    </section>
+  </div>
+
+  <p class="foot">Desarrollado por <a href="https://thedomstudioweb.github.io/" target="_blank" rel="noopener">The DOM Studio Web</a> · WhatsApp 261-3431216 · thedomstudioweb@gmail.com</p>
+</div>
+<script src="app.js"></script>
+<script type="module">
+import { iniciar } from './datos.js';
+import { respaldo } from './respaldo.js';
+const $ = id => document.getElementById(id);
+window.DOMINO = { aviso: (t) => { const a = $('aviso'); a.hidden = false; a.className = 'msg'; a.textContent = t; clearTimeout(window.__t); window.__t = setTimeout(() => a.hidden = true, 5000); } };
+await import('./pdfunif.js');
+
+// Hoja A4 unificada: frente arriba, dorso abajo.
+const hoja = { frente: null, dorso: null };
+const cargarImg = (file) => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = URL.createObjectURL(file); });
+function dibujarHoja() {
+  const c = $('hoja-canvas'), x = c.getContext('2d'); c.width = 1240; c.height = 1754;
+  x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height);
+  const caja = (img, y0) => {
+    const mx = 120, my = 90, w = c.width - mx * 2, h = c.height / 2 - my * 2;
+    x.strokeStyle = '#d9d9d9'; x.setLineDash([8, 8]); x.strokeRect(mx, y0 + my, w, h); x.setLineDash([]);
+    if (!img) return;
+    const k = Math.min(w / img.width, h / img.height), iw = img.width * k, ih = img.height * k;
+    x.drawImage(img, mx + (w - iw) / 2, y0 + my + (h - ih) / 2, iw, ih);
+  };
+  caja(hoja.frente, 0); caja(hoja.dorso, c.height / 2);
+}
+async function leerHoja(que, file) { if (!file) hoja[que] = null; else { try { hoja[que] = await cargarImg(file); } catch (e) { hoja[que] = null; } } dibujarHoja(); }
+for (const k of ['frente', 'dorso']) $('hoja-' + k).addEventListener('change', e => { const f = e.target.files[0]; $('n-' + k).textContent = f ? '✓ ' + f.name : ''; leerHoja(k, f); });
+$('hoja-limpiar').addEventListener('click', () => { hoja.frente = hoja.dorso = null; $('hoja-frente').value = ''; $('hoja-dorso').value = ''; $('n-frente').textContent = ''; $('n-dorso').textContent = ''; dibujarHoja(); window.DOMINO.aviso('Listo: se limpiaron las imágenes.'); });
+$('hoja-descargar').addEventListener('click', () => {
+  if (!hoja.frente && !hoja.dorso) return window.DOMINO.aviso('Elija al menos una imagen.');
+  $('hoja-canvas').toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'hoja-unificada-A4.png'; document.body.appendChild(a); a.click(); a.remove(); }, 'image/png');
+});
+$('hoja-imprimir').addEventListener('click', () => {
+  if (!hoja.frente && !hoja.dorso) return window.DOMINO.aviso('Elija al menos una imagen.');
+  const url = $('hoja-canvas').toDataURL('image/png'), w = window.open('', '_blank');
+  if (!w) return window.DOMINO.aviso('El navegador bloqueó la ventana de impresión.');
+  w.document.write('<title>Hoja unificada</title><style>@page{size:A4;margin:0}body{margin:0}img{width:210mm;height:297mm;display:block}</style><img src="' + url + '" onload="setTimeout(function(){print()},200)">'); w.document.close();
+});
+dibujarHoja();
+
+const ctx = await iniciar(); if (ctx) {
+  if (ctx.esSenior || ctx.demo) {
+    $('tool-respaldo').hidden = false;
+    $('resp-go').onclick = async () => {
+      const b = $('resp-go'), m = $('resp-m'); b.disabled = true; m.className = 'msg'; m.textContent = 'Armando la planilla…';
+      try { const n = await respaldo(ctx, window.DI); m.className = 'msg ok'; m.textContent = 'Listo: ' + n + '.'; }
+      catch (e) { m.className = 'msg er'; m.textContent = 'No se pudo armar la planilla (' + (e.code || e.message) + ').'; }
+      b.disabled = false;
+    };
+  }
+}
+</script>
+</body>
+</html>

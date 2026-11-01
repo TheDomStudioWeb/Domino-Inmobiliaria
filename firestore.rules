@@ -62,6 +62,15 @@ service cloud.firestore {
               && !(perfilDe().rol_jerarquia == 'asistente' && request.resource.data.get('estado', '').matches('Cerrada.*'))))
           && request.resource.data.get('img', '').size() < 450000;
         allow delete: if seniorDe(nid);
+
+        // Fotos adicionales de la propiedad: una foto reducida por documento (sin Storage). Las ve y las maneja quien ve la propiedad.
+        match /fotos/{fid} {
+          function propDe() { return get(/databases/$(database)/documents/negocios/$(nid)/props/$(id)).data; }
+          function conAcceso() { return seniorDe(nid) || (personalDe(nid) && (propDe().get('creado_por', '') == mail() || propDe().get('asignado', '') == mail())); }
+          allow read: if conAcceso();
+          allow create: if conAcceso() && request.resource.data.img is string && request.resource.data.img.size() < 450000 && request.resource.data.get('creado_por', '') == mail();
+          allow delete: if conAcceso();
+        }
       }
 
       // Fichas de propietarios e inquilinos (datos y notas; sin documentos adjuntos). Mismo criterio de visibilidad; solo la Dirección elimina.
