@@ -3,6 +3,7 @@
   'use strict';
   // Número del estudio: en la demostración, los avisos de WhatsApp llegan a The DOM. Cada inmobiliaria pone el suyo.
   var WA = '5492613431216';
+  var WA_DEMO = WA;
   var KEY = 'domino_inmo_demo_v1';
   var D = window.DI = {};
 
@@ -25,7 +26,17 @@
   };
   D.save = function (d) { try { localStorage.setItem(KEY, JSON.stringify(d)); return true; } catch (e) { return false; } };
   D.reset = function () { try { localStorage.removeItem(KEY); sessionStorage.removeItem('domino_foto'); } catch (e) {} };
-  D.wa = function (texto) { return 'https://wa.me/' + WA + '?text=' + encodeURIComponent(texto); };
+  // Teléfono argentino -> formato de WhatsApp (549 + área + número, sin 0 ni 15 de más). Si no hay teléfono válido, devuelve ''.
+  D.tel = function (t) {
+    var n = String(t || '').replace(/\D/g, '');
+    if (n.indexOf('549') === 0 && n.length >= 12) return n;
+    if (n.indexOf('54') === 0 && n.length >= 11) return '549' + n.slice(2);
+    n = n.replace(/^0+/, '');
+    return n.length === 10 ? '549' + n : (n.length >= 11 ? n : '');
+  };
+  D.setWA = function (t) { WA = D.tel(t) || WA_DEMO; };
+  // Enlace de WhatsApp. Con teléfono: al destinatario; sin teléfono: WhatsApp deja elegir el contacto.
+  D.wa = function (texto, tel) { var n = tel === undefined ? WA : D.tel(tel); return 'https://wa.me/' + (n || '') + '?text=' + encodeURIComponent(texto); };
   D.esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
 
   // Reduce la foto (la cámara del teléfono entrega imágenes enormes) para que entre en el almacenamiento del navegador.

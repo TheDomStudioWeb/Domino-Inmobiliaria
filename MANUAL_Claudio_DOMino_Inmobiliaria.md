@@ -4,7 +4,7 @@
 Micro app de The DOM Studio Web para inmobiliarias: el agente capta propiedades desde el celular y hace seguimiento de propietarios y leads. Hoy es una demostración que funciona sin servidor.
 
 ## Cómo se usa
-1. **Ingresar:** en la demo se toca «Ingresar» sin completar nada.
+1. **Ingresar:** con el correo y la contraseña que entregó la Dirección. Para conocer la app sin cuenta, tocar «Recorrer la demostración».
 2. **Panel:** tres contadores (en gestión, leads, captaciones nuevas); debajo, las propiedades en gestión con «Notificar al propietario» (abre WhatsApp con el reporte armado) y la lista de leads con «Contactar».
 3. **Captar una propiedad:** botón de cámara del centro de la barra inferior, sacar la foto, escribir la dirección, elegir el tipo (Solo tasación, Venta exclusiva, Alquiler) y «Subir al sistema». Queda con estado «Nueva» y suma a «Captaciones nuevas».
 4. **Restablecer:** al pie del panel, «Restablecer datos de ejemplo».
@@ -20,3 +20,9 @@ En `/sitio/`: tasación online (arma un mensaje de WhatsApp), pasos, propiedades
 
 ## Para una inmobiliaria real
 Se entrega con su marca, su WhatsApp, datos propios por centro, ingreso real de agentes y prueba de 1 semana. Consultas: The DOM Studio Web · WhatsApp 261-3431216 · thedomstudioweb@gmail.com
+
+## Equipo y prueba
+- La Dirección da de alta a su equipo desde «Gestionar el equipo» (al pie del panel): nombre, correo y contraseña temporal. Hay dos niveles: Agente (capta y hace seguimiento) y Dirección (además gestiona el equipo).
+- Cada inmobiliaria tiene 1 semana de prueba desde el primer ingreso de su Dirección; el panel muestra «Prueba hasta…».
+- «Registrar consulta» (panel) carga un lead con su WhatsApp; «Contactar» abre el chat. En cada propiedad se puede anotar el propietario y su WhatsApp, y «Notificar al propietario» le abre el chat con el reporte armado.
+- Los datos de una inmobiliaria nunca se ven desde otra.

@@ -20,11 +20,12 @@
 <header class="top">
   <div class="page">
     <div><h2>DOMino</h2><small>Inmobiliaria</small></div>
-    <a class="avatar" href="index.html" aria-label="Salir (agente demostración)">AG</a>
+    <button class="avatar" id="salir" type="button" aria-label="Salir">AG</button>
   </div>
 </header>
 
 <main class="page">
+  <p class="msg" id="aviso" role="status" hidden></p>
   <div class="kpis" aria-label="Resumen">
     <div class="kpi"><b id="k1">0</b><span>En gestión</span></div>
     <div class="kpi"><b id="k2">0</b><span>Leads</span></div>
@@ -37,7 +38,18 @@
   <h3 class="sec" id="leads">Nuevos leads · por contactar</h3>
   <div class="leads" id="lista"></div>
 
-  <button class="reset" id="reset" type="button">Restablecer datos de ejemplo</button>
+  <details class="nuevo" id="nuevo-lead">
+    <summary class="btn line sm">+ Registrar consulta</summary>
+    <form id="fl" novalidate>
+      <div class="field"><label for="ln">Nombre</label><input id="ln" autocomplete="off" placeholder="Nombre y apellido"></div>
+      <div class="field"><label for="lt">WhatsApp (con código de área, sin 0 ni 15)</label><input id="lt" inputmode="tel" autocomplete="off" placeholder="2615551234"></div>
+      <div class="field"><label for="ld">Qué consulta</label><input id="ld" autocomplete="off" placeholder="Ej.: Quiere tasar una casa en Chacras"></div>
+      <button class="btn" type="submit">Guardar consulta</button><p class="msg" id="lm" role="status"></p>
+    </form>
+  </details>
+
+  <p class="foot" id="equipo-link" hidden><a href="equipo.html">Gestionar el equipo</a> · <a href="centros/" id="centros-link" hidden>Alta de inmobiliarias</a></p>
+  <button class="reset" id="reset" type="button" hidden>Restablecer datos de ejemplo</button>
   <p class="foot">Demostración: los avisos de WhatsApp llegan al estudio que desarrolló la app.<br>Desarrollado por <a href="https://thedomstudioweb.github.io/" target="_blank" rel="noopener">The DOM Studio Web</a> · WhatsApp 261-3431216 · thedomstudioweb@gmail.com</p>
 </main>
 
@@ -53,48 +65,69 @@
 </nav>
 
 <script src="app.js"></script>
-<script>
-(function () {
-  var $ = function (id) { return document.getElementById(id); };
-  var WAI = '<svg viewBox="0 0 24 24"><path d="M4 20l1.3-4.2A8 8 0 1 1 8.4 18.7z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-.8.8c-.9-.4-1.6-1.1-2-2l.8-.8-1-2z"/></svg>';
+<script type="module">
+import { iniciar } from './datos.js';
+const $ = id => document.getElementById(id);
+const WAI = '<svg viewBox="0 0 24 24"><path d="M4 20l1.3-4.2A8 8 0 1 1 8.4 18.7z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-.8.8c-.9-.4-1.6-1.1-2-2l.8-.8-1-2z"/></svg>';
+const DI = window.DI;
+let ctx = null;
 
-  function pintar() {
-    var d = DI.load(), nuevas = 0;
-    var box = $('props'); box.innerHTML = '';
-    d.props.forEach(function (p) {
-      if (String(p.id).charAt(0) === 'n') nuevas++;
-      var c = document.createElement('article'); c.className = 'card';
-      var im = document.createElement('div'); im.className = 'img'; im.setAttribute('role', 'img'); im.setAttribute('aria-label', p.titulo);
-      if (p.img) im.style.backgroundImage = 'url("' + p.img.replace(/"/g, '%22') + '")';
-      var b = document.createElement('div'); b.className = 'body';
-      b.innerHTML = '<h3>' + DI.esc(p.titulo) + '</h3><span class="chip">' + DI.esc(p.estado) + '</span>';
-      var a = document.createElement('a'); a.className = 'btn ok'; a.target = '_blank'; a.rel = 'noopener';
-      a.href = DI.wa('Hola, te escribo desde DOMino Inmobiliaria. Reporte de tu propiedad «' + p.titulo + '»: ' + p.estado + '. ¡Seguimos avanzando!');
-      a.innerHTML = WAI + 'Notificar al propietario';
-      b.appendChild(a); c.appendChild(im); c.appendChild(b); box.appendChild(c);
-    });
-    if (!d.props.length) box.innerHTML = '<p class="empty" style="flex:1">Todavía no hay propiedades. Toque la cámara para captar la primera.</p>';
-
-    var l = $('lista'); l.innerHTML = '';
-    d.leads.forEach(function (x) {
-      var r = document.createElement('div'); r.className = 'lead';
-      r.innerHTML = '<div><h4>' + DI.esc(x.nombre) + '</h4><p>' + DI.esc(x.detalle) + '</p></div>';
-      var a = document.createElement('a'); a.className = 'btn line sm'; a.target = '_blank'; a.rel = 'noopener';
-      a.href = DI.wa('Hola ' + x.nombre + ', te escribo desde DOMino Inmobiliaria por tu consulta: ' + x.detalle + '.');
-      a.textContent = 'Contactar'; r.appendChild(a); l.appendChild(r);
-    });
-    if (!d.leads.length) l.innerHTML = '<p class="empty">No hay leads pendientes.</p>';
-
-    $('k1').textContent = d.props.length; $('k2').textContent = d.leads.length; $('k3').textContent = nuevas;
-  }
-
-  // Cámara: se toma la foto, se reduce y se pasa a la pantalla de captación (antes la foto se perdía en el salto).
-  $('foto').addEventListener('change', function () {
-    var f = this.files && this.files[0]; if (!f) return;
-    DI.reducir(f).then(function (url) { try { sessionStorage.setItem('domino_foto', url); } catch (e) {} location.href = 'captura.html'; })
-      .catch(function () { location.href = 'captura.html'; });
+async function pintar() {
+  let props = [], leads = [];
+  try { [props, leads] = await Promise.all([ctx.props(), ctx.leads()]); }
+  catch (e) { $('aviso').hidden = false; $('aviso').className = 'msg er'; $('aviso').textContent = 'No se pudieron leer los datos (' + (e.code || e.message) + '). Revise la conexión.'; }
+  const box = $('props'); box.innerHTML = ''; let nuevas = 0;
+  props.forEach(p => {
+    if (String(p.estado || '').indexOf('Nueva') === 0) nuevas++;
+    const c = document.createElement('article'); c.className = 'card';
+    const im = document.createElement('div'); im.className = 'img'; im.setAttribute('role', 'img'); im.setAttribute('aria-label', p.titulo);
+    if (p.img) im.style.backgroundImage = 'url("' + p.img.replace(/"/g, '%22') + '")';
+    const b = document.createElement('div'); b.className = 'body';
+    b.innerHTML = '<h3>' + DI.esc(p.titulo) + '</h3><span class="chip">' + DI.esc(p.estado) + '</span>' + (p.propietario ? '<p class="meta">Propietario: ' + DI.esc(p.propietario) + '</p>' : '');
+    const a = document.createElement('a'); a.className = 'btn ok'; a.target = '_blank'; a.rel = 'noopener';
+    a.href = DI.wa('Hola' + (p.propietario ? ' ' + p.propietario : '') + ', te escribo desde ' + (ctx.demo ? 'DOMino Inmobiliaria' : ctx.nombre) + '. Reporte de tu propiedad «' + p.titulo + '»: ' + p.estado + '. ¡Seguimos avanzando!', ctx.demo ? undefined : (p.propietario_tel || ''));
+    a.innerHTML = WAI + 'Notificar al propietario';
+    b.appendChild(a); c.appendChild(im); c.appendChild(b); box.appendChild(c);
   });
-  $('reset').addEventListener('click', function () { DI.reset(); pintar(); });
+  if (!props.length) box.innerHTML = '<p class="empty" style="flex:1">Todavía no hay propiedades. Toque la cámara para captar la primera.</p>';
+
+  const l = $('lista'); l.innerHTML = '';
+  leads.forEach(x => {
+    const r = document.createElement('div'); r.className = 'lead';
+    r.innerHTML = '<div><h4>' + DI.esc(x.nombre) + '</h4><p>' + DI.esc(x.detalle) + '</p></div>';
+    const a = document.createElement('a'); a.className = 'btn line sm'; a.target = '_blank'; a.rel = 'noopener';
+    a.href = DI.wa('Hola ' + x.nombre + ', te escribo desde ' + (ctx.demo ? 'DOMino Inmobiliaria' : ctx.nombre) + ' por tu consulta: ' + x.detalle + '.', ctx.demo ? undefined : (x.telefono || ''));
+    a.textContent = 'Contactar'; r.appendChild(a); l.appendChild(r);
+  });
+  if (!leads.length) l.innerHTML = '<p class="empty">No hay consultas pendientes.</p>';
+  $('k1').textContent = props.length; $('k2').textContent = leads.length; $('k3').textContent = nuevas;
+}
+
+(async () => {
+  ctx = await iniciar(); if (!ctx) return;
+  $('salir').textContent = ctx.iniciales; $('salir').title = 'Salir';
+  document.querySelector('.top small').textContent = ctx.demo ? 'Inmobiliaria · demostración' : ctx.nombre;
+  if (ctx.vence) { const d = Math.max(0, Math.ceil((ctx.vence - Date.now()) / 86400000)); const a = $('aviso'); a.hidden = false; a.className = 'msg'; a.textContent = 'Prueba hasta el ' + new Date(ctx.vence).toLocaleDateString('es-AR') + ' (' + d + (d === 1 ? ' día' : ' días') + ').'; }
+  if (ctx.demo) $('reset').hidden = false;
+  if (ctx.esSenior) $('equipo-link').hidden = false;
+  if (ctx.esSuperadmin) { $('equipo-link').hidden = false; $('centros-link').hidden = false; }
+  $('salir').onclick = () => ctx.salir();
+  $('reset').onclick = async () => { await ctx.reiniciar(); pintar(); };
+
+  // Cámara: se toma la foto, se reduce y se pasa a la pantalla de captación.
+  $('foto').addEventListener('change', function () {
+    const f = this.files && this.files[0]; if (!f) return;
+    DI.reducir(f).then(url => { try { sessionStorage.setItem('domino_foto', url); } catch (e) {} location.href = 'captura.html'; })
+      .catch(() => { location.href = 'captura.html'; });
+  });
+
+  $('fl').addEventListener('submit', async e => {
+    e.preventDefault(); const m = $('lm'), n = $('ln').value.trim(), d = $('ld').value.trim(), t = $('lt').value.trim();
+    if (n.length < 2 || d.length < 2) { m.className = 'msg er'; m.textContent = 'Complete el nombre y la consulta.'; return; }
+    if (t && !DI.tel(t)) { m.className = 'msg er'; m.textContent = 'Revise el WhatsApp: código de área y número, sin 0 ni 15.'; return; }
+    try { await ctx.agregarLead({ nombre: n, detalle: d, telefono: t ? DI.tel(t) : '' }); } catch (err) { m.className = 'msg er'; m.textContent = 'No se pudo guardar (' + (err.code || err.message) + ').'; return; }
+    $('fl').reset(); m.className = 'msg ok'; m.textContent = 'Consulta guardada.'; $('nuevo-lead').open = false; pintar();
+  });
   pintar();
 })();
 </script>

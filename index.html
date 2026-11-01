@@ -24,18 +24,42 @@
   <p class="sub">Captación y seguimiento de propiedades</p>
 
   <form id="f" novalidate>
-    <div class="field"><label for="u">ID de agente</label><input id="u" type="text" autocomplete="username" placeholder="Ej.: ag-0042" autocapitalize="none"></div>
+    <div class="field"><label for="u">Correo</label><input id="u" type="email" autocomplete="username" inputmode="email" placeholder="usuario@inmobiliaria.com" autocapitalize="none"></div>
     <div class="field"><label for="c">Contraseña</label><input id="c" type="password" autocomplete="current-password" placeholder="••••••••"></div>
-    <button class="btn" type="submit">Ingresar</button>
+    <button class="btn" type="submit" id="go">Ingresar</button>
+    <p class="msg" id="msg" role="alert"></p>
   </form>
+  <p class="demo-note" style="margin-top:6px"><a href="#" id="olvide">Olvidé mi contraseña</a></p>
 
-  <p class="demo-note"><b>Versión de demostración.</b> No hay cuentas reales: toque Ingresar para recorrer la app. Los datos que cargue quedan solo en este teléfono.</p>
+  <button class="btn line" type="button" id="demo" style="margin-top:20px">Recorrer la demostración</button>
+  <p class="demo-note"><b>Demostración:</b> datos de ejemplo, sin cuenta. Lo que cargue queda solo en este teléfono.</p>
 
   <p class="sign"><b>Estructura y potencia digital</b>Desarrollado por <a href="https://thedomstudioweb.github.io/" target="_blank" rel="noopener">The DOM Studio Web</a><br>WhatsApp 261-3431216 · thedomstudioweb@gmail.com<br><a href="sitio/">Ver el sitio web de demostración</a></p>
 </main>
 <script src="app.js"></script>
-<script>
-  document.getElementById('f').addEventListener('submit', function (e) { e.preventDefault(); location.href = 'dashboard.html'; });
+<script type="module">
+import { auth, signInWithEmailAndPassword, setPersistence, browserLocalPersistence, sendPasswordResetEmail, usuarioActual, avisoPendiente } from './fb.js';
+import { entrarDemo, esDemo, salirDemo } from './datos.js';
+const $ = id => document.getElementById(id), msg = (t, k) => { $('msg').textContent = t; $('msg').className = 'msg ' + (k || ''); };
+salirDemo();
+const aviso = avisoPendiente(); if (aviso) msg(aviso, 'er');
+else usuarioActual().then(u => { if (u) location.replace('dashboard.html'); });
+
+$('demo').onclick = entrarDemo;
+$('f').addEventListener('submit', async e => {
+  e.preventDefault();
+  const em = $('u').value.trim(), cl = $('c').value;
+  if (!em || !cl) return msg('Complete el correo y la contraseña.', 'er');
+  $('go').disabled = true; msg('Ingresando…');
+  try { await setPersistence(auth, browserLocalPersistence); await signInWithEmailAndPassword(auth, em, cl); location.replace('dashboard.html'); }
+  catch (err) { $('go').disabled = false; msg(err.code === 'auth/too-many-requests' ? 'Demasiados intentos. Espere unos minutos o restablezca la contraseña.' : 'Correo o contraseña incorrectos.', 'er'); }
+});
+$('olvide').onclick = async e => {
+  e.preventDefault(); const em = $('u').value.trim();
+  if (!em) return msg('Escriba su correo arriba y vuelva a tocar «Olvidé mi contraseña».', 'er');
+  try { await sendPasswordResetEmail(auth, em); } catch (err) {}
+  msg('Si el correo tiene cuenta, le enviamos un mensaje para elegir una contraseña nueva.', 'ok');
+};
 </script>
 </body>
 </html>

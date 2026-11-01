@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DOMino Inmobiliaria · Equipo</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0A0A0A">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="imagenes/favicon-64.png">
+<link rel="apple-touch-icon" href="imagenes/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="page">
+  <div class="head">
+    <a class="back" href="dashboard.html" aria-label="Volver al panel"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <h2>Equipo</h2>
+  </div>
+
+  <h3 class="sec">Personas con acceso</h3>
+  <div class="tabla" id="lista">Cargando…</div>
+
+  <h3 class="sec">Agregar una persona</h3>
+  <form id="f" novalidate>
+    <div class="field"><label for="n">Nombre y apellido</label><input id="n" autocomplete="off"></div>
+    <div class="field"><label for="e">Correo</label><input id="e" type="email" inputmode="email" autocomplete="off" autocapitalize="none"></div>
+    <div class="field"><label for="c">Contraseña temporal (mínimo 8 caracteres)</label><input id="c" type="text" autocomplete="off" autocapitalize="none"></div>
+    <div class="field"><label for="r">Nivel</label><select id="r"><option value="agente">Agente (capta y hace seguimiento)</option><option value="senior">Dirección (además gestiona el equipo)</option></select></div>
+    <button class="btn" type="submit" id="go">Dar de alta</button>
+    <p class="msg" id="msg" role="status" aria-live="polite" style="white-space:pre-wrap"></p>
+  </form>
+  <p class="foot">Pásele a la persona la dirección de la app, su correo y la contraseña temporal. Puede cambiarla con «Olvidé mi contraseña».<br>Desarrollado por <a href="https://thedomstudioweb.github.io/" target="_blank" rel="noopener">The DOM Studio Web</a> · WhatsApp 261-3431216 · thedomstudioweb@gmail.com</p>
+</div>
+<script src="app.js"></script>
+<script type="module">
+import { CFG, db, initializeApp, getAuth, createUserWithEmailAndPassword, signOut, collection, getDocs, query, where, doc, setDoc, updateDoc, serverTimestamp } from './fb.js';
+import { iniciar, esDemo } from './datos.js';
+const $ = id => document.getElementById(id), esc = window.DI.esc;
+const msg = (t, k) => { $('msg').className = 'msg ' + (k || ''); $('msg').textContent = t; };
+let ctx = null;
+
+async function listar() {
+  try {
+    const r = await getDocs(query(collection(db, 'users'), where('negocio_id', '==', ctx.sesion.negocioId))), f = [];
+    r.forEach(d => f.push(Object.assign({ id: d.id }, d.data())));
+    f.sort((a, b) => String(a.nombre_display).localeCompare(String(b.nombre_display)));
+    $('lista').innerHTML = f.map(u => '<div class="fila"><div><b>' + esc(u.nombre_display || u.email) + '</b><small>' + esc(u.email) + ' · ' + (u.rol_jerarquia === 'senior' ? 'Dirección' : 'Agente') + (u.activo === false ? ' · de baja' : '') + '</small></div>' +
+      (u.id === ctx.sesion.mail ? '' : '<button class="btn line sm" data-id="' + esc(u.id) + '" data-a="' + (u.activo === false ? '1' : '0') + '">' + (u.activo === false ? 'Reactivar' : 'Dar de baja') + '</button>') + '</div>').join('') || 'Todavía no hay personas.';
+  } catch (e) { $('lista').textContent = 'No se pudo leer el equipo (' + (e.code || e.message) + ').'; }
+}
+
+(async () => {
+  if (esDemo()) { location.replace('dashboard.html'); return; }
+  ctx = await iniciar(); if (!ctx) return;
+  if (!ctx.esSenior && !ctx.esSuperadmin) { location.replace('dashboard.html'); return; }
+  listar();
+  $('lista').onclick = async e => {
+    const b = e.target.closest('button[data-id]'); if (!b) return; b.disabled = true;
+    try { await updateDoc(doc(db, 'users', b.dataset.id), { activo: b.dataset.a === '1' }); } catch (err) { alert('No se pudo cambiar (' + (err.code || err.message) + ').'); }
+    listar();
+  };
+  $('f').addEventListener('submit', async e => {
+    e.preventDefault();
+    const n = $('n').value.trim(), em = $('e').value.trim().toLowerCase(), cl = $('c').value, rol = $('r').value;
+    if (n.length < 2 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) return msg('Faltan el nombre o un correo válido.', 'er');
+    if (cl.length < 8) return msg('La contraseña temporal necesita al menos 8 caracteres.', 'er');
+    $('go').disabled = true; msg('Creando…');
+    try {
+      const sec = initializeApp(CFG, 'sec' + Date.now()), sa = getAuth(sec); let nota = 'Cuenta creada.';
+      try { await createUserWithEmailAndPassword(sa, em, cl); }
+      catch (err) { if (err.code === 'auth/email-already-in-use') nota = 'Ese correo ya tenía cuenta: conserva su contraseña.'; else throw err; }
+      await signOut(sa);
+      await setDoc(doc(db, 'users', em), { email: em, nombre_display: n, rol_jerarquia: rol, activo: true, negocio_id: ctx.sesion.negocioId, creado: serverTimestamp() });
+      msg('Listo. ' + nota + '\nCorreo: ' + em + (nota.indexOf('ya tenía') < 0 ? '\nContraseña temporal: ' + cl : ''), 'ok');
+      $('f').reset(); listar();
+    } catch (err) { msg('No se pudo dar de alta (' + (err.code || err.message) + ').', 'er'); }
+    $('go').disabled = false;
+  });
+})();
+</script>
+</body>
+</html>

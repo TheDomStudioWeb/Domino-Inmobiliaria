@@ -1,0 +1,76 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Quién es quién ─────────────────────────────────────────────
+    // Cada persona del equipo tiene un documento users/{correo en minúsculas} con su nivel y la inmobiliaria (negocio) a la que pertenece.
+    // Todos los datos de una inmobiliaria viven bajo negocios/{id}/… y SOLO los ve el equipo de esa inmobiliaria.
+    function mail() { return request.auth.token.email.lower(); }
+    function logueado() { return request.auth != null && request.auth.token.email != null; }
+    function perfilDe() { return get(/databases/$(database)/documents/users/$(mail())).data; }
+    function activoG() { return logueado() && exists(/databases/$(database)/documents/users/$(mail())) && perfilDe().activo == true; }
+    function esSuperadmin() { return logueado() && exists(/databases/$(database)/documents/superadmins/$(mail())); }
+
+    // Una inmobiliaria está vigente si está activa, o en prueba y la semana todavía no terminó.
+    function vigente(nid) {
+      let n = get(/databases/$(database)/documents/negocios/$(nid)).data;
+      return n.estado == 'activo' || (n.estado == 'prueba' && (n.get('vence', null) == null || n.vence > request.time));
+    }
+    function personalDe(nid) { return activoG() && perfilDe().negocio_id == nid && vigente(nid); }
+    function seniorDe(nid) { return personalDe(nid) && perfilDe().rol_jerarquia == 'senior'; }
+
+    // ── Administradores de The DOM Studio Web ─────────────────────
+    // Solo existen si se cargan a mano en la consola. Pueden dar de alta inmobiliarias y sus primeros usuarios.
+    match /superadmins/{id} {
+      allow get: if logueado() && id == mail();
+    }
+
+    // ── Inmobiliarias ──────────────────────────────────────────────
+    // Los miembros leen la ficha de su inmobiliaria (aunque esté vencida, para poder avisarles). La Dirección fija el vencimiento de
+    // la prueba una sola vez, en su primer ingreso, y nunca más de 7 días (1 día de margen por el reloj del teléfono).
+    match /negocios/{nid} {
+      allow get: if esSuperadmin() || (activoG() && perfilDe().negocio_id == nid);
+      allow list, create, delete: if esSuperadmin();
+      allow update: if esSuperadmin()
+        || (activoG() && perfilDe().negocio_id == nid && perfilDe().rol_jerarquia == 'senior'
+            && resource.data.estado == 'prueba' && resource.data.get('vence', null) == null
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['vence'])
+            && request.resource.data.vence <= request.time + duration.value(8, 'd'));
+
+      // Datos de la inmobiliaria (nombre, teléfono de WhatsApp para avisos). Lo lee el equipo; solo la Dirección lo cambia.
+      match /config/{id} {
+        allow read: if personalDe(nid);
+        allow write: if seniorDe(nid);
+      }
+
+      // Propiedades captadas. El equipo las gestiona; la foto va reducida dentro del documento (tope de tamaño).
+      match /props/{id} {
+        allow read: if personalDe(nid);
+        allow create, update: if personalDe(nid)
+          && request.resource.data.get('img', '').size() < 450000
+          && request.resource.data.titulo is string && request.resource.data.titulo.size() > 0 && request.resource.data.titulo.size() < 200;
+        allow delete: if seniorDe(nid);
+      }
+
+      // Consultas de personas interesadas.
+      match /leads/{id} {
+        allow read, write: if personalDe(nid);
+      }
+    }
+
+    // ── Equipo ─────────────────────────────────────────────────────
+    // Cada persona lee su propio perfil. El equipo ve solo a los de su misma inmobiliaria.
+    // La Dirección da de alta, cambia el nivel o da de baja, siempre dentro de su inmobiliaria.
+    match /users/{id} {
+      allow get: if esSuperadmin() || (logueado() && id == mail()) || (activoG() && perfilDe().negocio_id == resource.data.negocio_id);
+      allow list: if esSuperadmin() || (activoG() && vigente(perfilDe().negocio_id) && resource.data.negocio_id == perfilDe().negocio_id);
+      allow create: if esSuperadmin()
+        || (activoG() && vigente(perfilDe().negocio_id) && perfilDe().rol_jerarquia == 'senior' && request.resource.data.negocio_id == perfilDe().negocio_id);
+      allow update: if esSuperadmin()
+        || (activoG() && vigente(perfilDe().negocio_id) && perfilDe().rol_jerarquia == 'senior'
+            && resource.data.negocio_id == perfilDe().negocio_id && request.resource.data.negocio_id == perfilDe().negocio_id);
+      allow delete: if esSuperadmin()
+        || (activoG() && vigente(perfilDe().negocio_id) && perfilDe().rol_jerarquia == 'senior' && resource.data.negocio_id == perfilDe().negocio_id);
+    }
+  }
+}
