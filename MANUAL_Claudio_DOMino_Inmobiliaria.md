@@ -68,3 +68,8 @@ Se entrega con su marca, su WhatsApp, datos propios por centro, ingreso real de 
 - **Hoja unificada A4 (DNI):** frente y dorso de un documento en una sola hoja A4, para imprimir o guardar como imagen.
 - **Unificador de archivos en PDF:** junta fotos, PDF y Word (.docx) en un solo PDF, en el orden elegido, con giro de páginas. No admite Excel, PowerPoint, ZIP ni audio. Todo se arma en el teléfono: no se sube nada a ningún servidor.
 - **Copia de seguridad (solo Dirección):** descarga una planilla de Excel con cuatro hojas: Propiedades, Personas, Consultas y Ajustes de alquiler. No incluye fotos.
+
+## Contratos: solo para alquileres y siempre con inquilino
+- El contrato, el inquilino, el alquiler y los ajustes solo aparecen en propiedades cuya operación es «Alquiler». En «Venta exclusiva» y «Solo tasación» el panel se llama «Propietario» y solo permite elegir la ficha del propietario.
+- No se puede guardar un contrato (fechas o monto) sin elegir un inquilino. Si todavía no está cargado, se lo da de alta en «Personas».
+- Los avisos de contratos por vencer y de ajustes de alquiler solo consideran propiedades en alquiler.

@@ -105,7 +105,7 @@ async function pintar() {
     const im = document.createElement('div'); im.className = 'img'; im.setAttribute('role', 'img'); im.setAttribute('aria-label', p.titulo);
     if (p.img) im.style.backgroundImage = 'url("' + p.img.replace(/"/g, '%22') + '")';
     const b = document.createElement('div'); b.className = 'body';
-    b.innerHTML = '<h3>' + DI.esc(p.titulo) + '</h3><span class="chip">' + DI.esc(p.estado) + '</span>' + (function () { const k = DI.contrato(p.contrato_vence); return k ? '<span class="chip ' + k.k + '">Contrato · ' + k.t + '</span>' : ''; })() + (p.propietario ? '<p class="meta">Propietario: ' + DI.esc(p.propietario) + '</p>' : '') + (fx[p.inquilino_id] ? '<p class="meta">Inquilino: ' + DI.esc(fx[p.inquilino_id].nombre) + '</p>' : '') + (p.seg_fecha ? '<span class="chip ' + chipSeg(DI, p.seg_fecha).k + '">' + chipSeg(DI, p.seg_fecha).t + '</span>' : '') + (p.alq_monto ? '<p class="meta">Alquiler: ' + dinero(p.alq_monto) + (DI.proxAjuste(p) ? ' · ' + chipAjuste(DI, DI.proxAjuste(p)).t.toLowerCase() : '') + '</p>' : '') + (ctx.esSenior && p.asignado && nombres[p.asignado] ? '<p class="meta">A cargo de: ' + DI.esc(nombres[p.asignado]) + '</p>' : '');
+    b.innerHTML = '<h3>' + DI.esc(p.titulo) + '</h3><span class="chip">' + DI.esc(p.estado) + '</span>' + (function () { const k = p.operacion === 'Alquiler' ? DI.contrato(p.contrato_vence) : null; return k ? '<span class="chip ' + k.k + '">Contrato · ' + k.t + '</span>' : ''; })() + (p.propietario ? '<p class="meta">Propietario: ' + DI.esc(p.propietario) + '</p>' : '') + (fx[p.inquilino_id] ? '<p class="meta">Inquilino: ' + DI.esc(fx[p.inquilino_id].nombre) + '</p>' : '') + (p.seg_fecha ? '<span class="chip ' + chipSeg(DI, p.seg_fecha).k + '">' + chipSeg(DI, p.seg_fecha).t + '</span>' : '') + (p.alq_monto ? '<p class="meta">Alquiler: ' + dinero(p.alq_monto) + (DI.proxAjuste(p) ? ' · ' + chipAjuste(DI, DI.proxAjuste(p)).t.toLowerCase() : '') + '</p>' : '') + (ctx.esSenior && p.asignado && nombres[p.asignado] ? '<p class="meta">A cargo de: ' + DI.esc(nombres[p.asignado]) + '</p>' : '');
     // Cambiar el estado de la operación. El Gestor no puede darla por cerrada.
     const sel = document.createElement('select'); sel.className = 'mini'; sel.setAttribute('aria-label', 'Estado de la operación');
     const est = DI.ESTADOS.filter(e => !(ctx.rol === 'asistente' && e === 'Cerrada'));
@@ -123,29 +123,32 @@ async function pintar() {
     const inqs = fichas.filter(x => x.tipo === 'inquilino'), pros = fichas.filter(x => x.tipo === 'propietario');
     const op = (lista, sel) => lista.map(x => '<option value="' + DI.esc(x.id) + '"' + (x.id === sel ? ' selected' : '') + '>' + DI.esc(x.nombre) + '</option>').join('');
     const det = document.createElement('details'); det.className = 'contrato';
-    det.innerHTML = '<summary>Contrato e inquilino</summary>'
-      + '<div class="field"><label>Inquilino</label><select class="c-inq"><option value="">Sin inquilino</option>' + op(inqs, p.inquilino_id) + '</select></div>'
+    const alq = p.operacion === 'Alquiler'; // el contrato, el inquilino y el alquiler solo valen para operaciones de alquiler
+    det.innerHTML = '<summary>' + (alq ? 'Contrato e inquilino' : 'Propietario') + '</summary>'
+      + (alq ? '<div class="field"><label>Inquilino</label><select class="c-inq"><option value="">Sin inquilino</option>' + op(inqs, p.inquilino_id) + '</select></div>' : '')
       + '<div class="field"><label>Propietario</label><select class="c-pro"><option value="">Sin ficha</option>' + op(pros, p.propietario_id) + '</select></div>'
-      + '<div class="field"><label>Inicio del contrato</label><input class="c-ini" type="date" value="' + DI.esc(p.contrato_inicio || '') + '"></div>'
+      + (!alq ? '' : '<div class="field"><label>Inicio del contrato</label><input class="c-ini" type="date" value="' + DI.esc(p.contrato_inicio || '') + '"></div>'
       + '<div class="field"><label>Vence el</label><input class="c-ven" type="date" value="' + DI.esc(p.contrato_vence || '') + '"></div>'
       + '<div class="field"><label>Alquiler actual ($)</label><input class="c-monto" inputmode="numeric" autocomplete="off" placeholder="Ej.: 420000" value="' + DI.esc(p.alq_monto || '') + '"></div>'
       + '<div class="field"><label>Ajuste cada</label><select class="c-per">' + [[0, 'Sin ajuste'], [3, '3 meses'], [4, '4 meses'], [6, '6 meses'], [12, '12 meses']].map(x => '<option value="' + x[0] + '"' + (Number(p.alq_ajuste_meses || 0) === x[0] ? ' selected' : '') + '>' + x[1] + '</option>').join('') + '</select></div>'
-      + '<div class="field"><label>Índice acordado</label><select class="c-idx">' + ['IPC', 'Porcentaje fijo', 'Otro'].map(x => '<option' + ((p.alq_indice || 'IPC') === x ? ' selected' : '') + '>' + x + '</option>').join('') + '</select></div>'
+      + '<div class="field"><label>Índice acordado</label><select class="c-idx">' + ['IPC', 'Porcentaje fijo', 'Otro'].map(x => '<option' + ((p.alq_indice || 'IPC') === x ? ' selected' : '') + '>' + x + '</option>').join('') + '</select></div>')
       + (fichas.length ? '' : '<p class="meta">Primero cargue al inquilino y al propietario en <a href="personas.html" style="color:var(--gold)">Personas</a>.</p>')
-      + '<button class="btn sm c-go" type="button">Guardar contrato</button><p class="msg c-m" role="status"></p>';
+      + '<button class="btn sm c-go" type="button">' + (alq ? 'Guardar contrato' : 'Guardar') + '</button><p class="msg c-m" role="status"></p>';
+    const val = (s) => { const e = det.querySelector(s); return e ? e.value : ''; };
     det.querySelector('.c-go').onclick = async () => {
-      const m = det.querySelector('.c-m'), ini = det.querySelector('.c-ini').value, ven = det.querySelector('.c-ven').value, pid = det.querySelector('.c-pro').value, iid = det.querySelector('.c-inq').value;
+      const m = det.querySelector('.c-m'), ini = val('.c-ini'), ven = val('.c-ven'), pid = det.querySelector('.c-pro').value, iid = val('.c-inq');
+      if (alq && !iid && (ini || ven || val('.c-monto').trim())) { m.className = 'msg er c-m'; m.textContent = 'Para cargar un contrato primero elija al inquilino. Si todavía no está, cárguelo en Personas.'; return; }
       if (ini && ven && ven < ini) { m.className = 'msg er c-m'; m.textContent = 'El vencimiento no puede ser anterior al inicio.'; return; }
-      const mt = det.querySelector('.c-monto').value.trim(), monto = aMonto(mt);
+      const mt = val('.c-monto').trim(), monto = aMonto(mt);
       if (mt && !monto) { m.className = 'msg er c-m'; m.textContent = 'Revise el alquiler: solo números.'; return; }
-      const campos = { inquilino_id: iid, propietario_id: pid, contrato_inicio: ini, contrato_vence: ven, alq_monto: monto || '', alq_ajuste_meses: Number(det.querySelector('.c-per').value) || 0, alq_indice: det.querySelector('.c-idx').value };
+      const campos = alq ? { inquilino_id: iid, propietario_id: pid, contrato_inicio: ini, contrato_vence: ven, alq_monto: monto || '', alq_ajuste_meses: Number(val('.c-per')) || 0, alq_indice: val('.c-idx') || 'IPC' } : { propietario_id: pid };
       if (pid && fx[pid]) { campos.propietario = fx[pid].nombre; campos.propietario_tel = fx[pid].telefono || ''; }
       try { await ctx.actualizarProp(p.id, campos); pintar(); } catch (err) { m.className = 'msg er c-m'; m.textContent = 'No se pudo guardar (' + (err.code || err.message) + ').'; }
     };
     b.appendChild(det);
     b.appendChild(panelFotos({ DI, ctx, p }));
     b.appendChild(panelSeg({ DI, item: p, update: (c) => ctx.actualizarProp(p.id, c), alTerminar: () => pintar() }));
-    if (p.alq_monto) b.appendChild(panelAjuste(p, { DI, ctx, alTerminar: () => pintar() }));
+    if (p.operacion === 'Alquiler' && p.alq_monto) b.appendChild(panelAjuste(p, { DI, ctx, alTerminar: () => pintar() }));
     const a = document.createElement('a'); a.className = 'btn ok'; a.target = '_blank'; a.rel = 'noopener';
     a.href = DI.wa('Hola' + (p.propietario ? ' ' + p.propietario : '') + ', te escribo desde ' + (ctx.demo ? 'DOMino Inmobiliaria' : ctx.nombre) + '. Reporte de tu propiedad «' + p.titulo + '»: ' + p.estado + '. ¡Seguimos avanzando!' + (ctx.firma ? '\n— ' + ctx.firma : ''), ctx.demo ? undefined : (p.propietario_tel || ''));
     a.innerHTML = WAI + 'Notificar al propietario';
@@ -154,7 +157,7 @@ async function pintar() {
   if (!props.length) box.innerHTML = '<p class="empty" style="flex:1">Todavía no hay propiedades. Toque la cámara para captar la primera.</p>';
 
   // Contratos por vencer (dentro de 90 días o ya vencidos): aviso al inquilino y al propietario por WhatsApp.
-  const cv = props.filter(p => { const n = DI.dias(p.contrato_vence); return n !== null && n <= 90; }).sort((x, y) => DI.dias(x.contrato_vence) - DI.dias(y.contrato_vence));
+  const cv = props.filter(p => p.operacion === 'Alquiler').filter(p => { const n = DI.dias(p.contrato_vence); return n !== null && n <= 90; }).sort((x, y) => DI.dias(x.contrato_vence) - DI.dias(y.contrato_vence));
   $('contratos').hidden = !cv.length; const vb = $('venc'); vb.innerHTML = '';
   const nombreInmo = ctx.demo ? 'DOMino Inmobiliaria' : ctx.nombre, tx = ctx.firma ? '\n— ' + ctx.firma : '';
   cv.forEach(p => {
@@ -172,7 +175,7 @@ async function pintar() {
   $('aviso2').hidden = !pr; if (pr) $('aviso2').innerHTML = '<a href="#contratos" style="text-decoration:underline">' + pr + (pr === 1 ? ' contrato vence' : ' contratos vencen') + ' en los próximos 30 días o ya venció.</a>';
 
   // Ajustes de alquiler que vencen en 30 días o menos (o atrasados): se calcula con el IPC traído o escrito a mano y se avisa al inquilino.
-  const aj = props.filter(p => p.alq_monto && DI.proxAjuste(p) && DI.dias(DI.proxAjuste(p)) <= 30).sort((x, y) => DI.dias(DI.proxAjuste(x)) - DI.dias(DI.proxAjuste(y)));
+  const aj = props.filter(p => p.operacion === 'Alquiler' && p.alq_monto && DI.proxAjuste(p) && DI.dias(DI.proxAjuste(p)) <= 30).sort((x, y) => DI.dias(DI.proxAjuste(x)) - DI.dias(DI.proxAjuste(y)));
   $('ajustes').hidden = !aj.length; const ab = $('ajus'); ab.innerHTML = '';
   aj.forEach(p => {
     const k = chipAjuste(DI, DI.proxAjuste(p)), inq = fx[p.inquilino_id], r = document.createElement('div'); r.className = 'lead';
