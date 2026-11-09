@@ -73,3 +73,14 @@ Se entrega con su marca, su WhatsApp, datos propios por centro, ingreso real de 
 - El contrato, el inquilino, el alquiler y los ajustes solo aparecen en propiedades cuya operación es «Alquiler». En «Venta exclusiva» y «Solo tasación» el panel se llama «Propietario» y solo permite elegir la ficha del propietario.
 - No se puede guardar un contrato (fechas o monto) sin elegir un inquilino. Si todavía no está cargado, se lo da de alta en «Personas».
 - Los avisos de contratos por vencer y de ajustes de alquiler solo consideran propiedades en alquiler.
+
+
+## Ingreso "líquido" (09/11/2026)
+La pantalla de ingreso muestra un solo botón dorado **Ingresar**. Al tocarlo, el botón se estira, se afina en el medio como un líquido y se divide en dos: se convierten en los campos **Correo** y **Contraseña**.
+- Se escribe el correo, se toca Enter (o se pasa al otro campo) y se escribe la contraseña. Para entrar: Enter o la **flecha** dorada dentro del campo. "Ver" muestra la contraseña.
+- Al enviar, los campos se vuelven a unir en el botón con "Ingresando…". Si los datos son correctos aparece **✓ Bienvenido** con un brillo verde y se abre la app.
+- Si la contraseña es incorrecta, el botón se sacude en rojo, muestra el motivo y se vuelve a abrir **sin borrar** lo escrito.
+- "¿Olvidaste tu contraseña?" usa el correo escrito; si el botón está cerrado, lo abre para escribirlo.
+- Funciona con el autocompletado de contraseñas del teléfono. Componente: `dom-login.js` (The DOM Studio Web).
+
+**Para responder por voz:** "¿Cómo entro?" → Tocá Ingresar, escribí tu correo y tu contraseña, y tocá la flecha.
