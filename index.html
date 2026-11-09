@@ -16,6 +16,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="app.css">
+<style>
+  /* Ingreso líquido DOMino (dom-login.js) con los colores de la marca */
+  #dl-host{width:100%;max-width:380px;margin:4px auto 0}
+  #dl-host .dl{--dl-pill-a:#f3dc8f;--dl-pill-b:#c99a2e;--dl-pill-tx:#0A0A0A;--dl-field:#16181C;--dl-field-bd:#2E2A1E;--dl-tx:#F4F1EA;--dl-mut:#B9B4A8;--dl-accent:#D4AF37;--dl-ok:#4CC38A;--dl-bad:#FF6B61;font-family:Montserrat,sans-serif}
+  #dl-host .dl-btn{letter-spacing:.12em;text-transform:uppercase;font-size:.85rem}
+</style>
 </head>
 <body>
 <main class="page login">
@@ -23,12 +29,8 @@
   <h1>Inmobiliaria</h1>
   <p class="sub">Captación y seguimiento de propiedades</p>
 
-  <form id="f" novalidate>
-    <div class="field"><label for="u">Correo</label><input id="u" type="email" autocomplete="username" inputmode="email" placeholder="usuario@inmobiliaria.com" autocapitalize="none"></div>
-    <div class="field"><label for="c">Contraseña</label><input id="c" type="password" autocomplete="current-password" placeholder="••••••••"></div>
-    <button class="btn" type="submit" id="go">Ingresar</button>
-    <p class="msg" id="msg" role="alert"></p>
-  </form>
+  <div id="dl-host"></div>
+  <p class="msg" id="msg" role="alert"></p>
   <p class="demo-note" style="margin-top:6px"><a href="#" id="olvide">Olvidé mi contraseña</a></p>
 
   <button class="btn line" type="button" id="demo" style="margin-top:20px">Recorrer la demostración</button>
@@ -37,6 +39,7 @@
   <p class="sign"><b>Estructura y potencia digital</b>Desarrollado por <a href="https://thedomstudioweb.github.io/" target="_blank" rel="noopener">The DOM Studio Web</a><br>WhatsApp 261-3431216 · thedomstudioweb@gmail.com<br><a href="sitio/">Ver el sitio web de demostración</a></p>
 </main>
 <script src="app.js"></script>
+<script src="dom-login.js"></script>
 <script type="module">
 import { auth, signInWithEmailAndPassword, setPersistence, browserLocalPersistence, sendPasswordResetEmail, usuarioActual, avisoPendiente } from './fb.js';
 import { entrarDemo, esDemo, salirDemo } from './datos.js';
@@ -46,25 +49,30 @@ const aviso = avisoPendiente(); if (aviso) msg(aviso, 'er');
 else usuarioActual().then(u => { if (u) location.replace('dashboard.html'); });
 
 $('demo').onclick = entrarDemo;
-$('f').addEventListener('submit', async e => {
-  e.preventDefault();
-  const em = $('u').value.trim(), cl = $('c').value;
-  if (!em || !cl) return msg('Complete el correo y la contraseña.', 'er');
-  $('go').disabled = true; msg('Ingresando…');
-  const espera = new Promise((_, no) => setTimeout(() => no({ code: 'tiempo-agotado' }), 20000));
-  try { await Promise.race([signInWithEmailAndPassword(auth, em, cl), espera]); location.replace('dashboard.html'); }
-  catch (err) {
-    $('go').disabled = false;
-    const c = err && err.code || 'error';
-    msg(c === 'auth/too-many-requests' ? 'Demasiados intentos. Espere unos minutos o restablezca la contraseña.'
-      : c === 'tiempo-agotado' || c === 'auth/network-request-failed' ? 'No se pudo conectar con el servidor (' + c + '). Revise la conexión, pruebe con Wi-Fi y vuelva a intentar.'
-      : c === 'auth/invalid-credential' || c === 'auth/wrong-password' || c === 'auth/user-not-found' || c === 'auth/invalid-email' ? 'Correo o contraseña incorrectos.'
-      : 'No se pudo ingresar (' + c + ').', 'er');
-  }
+// Ingreso "líquido" (dom-login.js): el botón se divide en los campos y al entrar se vuelve a unir
+const ingreso = window.DomLogin.mount($('dl-host'), {
+  campos: [
+    { nombre: 'u', etiqueta: 'Correo', tipo: 'email', autocomplete: 'username', inputmode: 'email' },
+    { nombre: 'c', etiqueta: 'Contraseña', tipo: 'password', autocomplete: 'current-password' }
+  ],
+  boton: 'Ingresar', enviando: 'Ingresando…', listo: 'Bienvenido',
+  enviar: async v => {
+    msg('');
+    const espera = new Promise((_, no) => setTimeout(() => no({ code: 'tiempo-agotado' }), 20000));
+    try { await Promise.race([signInWithEmailAndPassword(auth, v.u, v.c), espera]); }
+    catch (err) {
+      const c = err && err.code || 'error';
+      throw new Error(c === 'auth/too-many-requests' ? 'Demasiados intentos. Espere unos minutos o restablezca la contraseña.'
+        : c === 'tiempo-agotado' || c === 'auth/network-request-failed' ? 'No se pudo conectar con el servidor. Revise la conexión, pruebe con Wi-Fi y vuelva a intentar.'
+        : c === 'auth/invalid-credential' || c === 'auth/wrong-password' || c === 'auth/user-not-found' || c === 'auth/invalid-email' ? 'Correo o contraseña incorrectos.'
+        : 'No se pudo ingresar (' + c + ').');
+    }
+  },
+  hecho: () => location.replace('dashboard.html')
 });
 $('olvide').onclick = async e => {
-  e.preventDefault(); const em = $('u').value.trim();
-  if (!em) return msg('Escriba su correo arriba y vuelva a tocar «Olvidé mi contraseña».', 'er');
+  e.preventDefault(); const em = (ingreso.valores().u || '').trim();
+  if (!em) { ingreso.abrir(); return msg('Escriba su correo y vuelva a tocar «Olvidé mi contraseña».', 'er'); }
   try { await sendPasswordResetEmail(auth, em); } catch (err) {}
   msg('Si el correo tiene cuenta, le enviamos un mensaje para elegir una contraseña nueva.', 'ok');
 };
