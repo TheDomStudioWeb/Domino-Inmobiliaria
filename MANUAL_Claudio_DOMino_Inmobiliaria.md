@@ -96,4 +96,6 @@ La pantalla de ingreso muestra un solo botón dorado **Ingresar**. Al tocarlo, e
 - La lectura de planos desde una foto con IA queda, por ahora, solo en la versión de claude.ai de DOMino Planos 3D.
 - Importante: las reglas nuevas (`planos` y `planos_publicos`) están en `firestore.rules`, pero hay que publicarlas a mano en la consola de Firebase (Firestore → Reglas), igual que las anteriores. Sin eso, guardar y publicar da error de permisos.
 
+- Detalles del editor (26/11/2026): alto de ventanas con dintel a 2,15 m, vano libre sin puerta, medidas de muebles editables y herramienta «Recortar tramo» para borrar parte de una pared.
+
 **Para responder por voz:** "¿Cómo le hago el plano a una propiedad?" → En el panel, en la tarjeta de la propiedad, tocá «Plano 3D», dibujalo y tocá «Guardar plano». Para mandárselo a un cliente, tocá «Publicar para clientes» y enviá el link por WhatsApp.
