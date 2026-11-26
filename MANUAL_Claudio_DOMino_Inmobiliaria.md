@@ -107,3 +107,9 @@ La pantalla de ingreso muestra un solo botón dorado **Ingresar**. Al tocarlo, e
 - Varias plantas, sótano y escaleras (recta, en L, en U, caracol) con recorrido entre pisos (26/11/2026). Ver el manual de DOMino Planos 3D.
 
 **Para responder por voz:** "¿Cómo le hago el plano a una propiedad?" → En el panel, en la tarjeta de la propiedad, tocá «Plano 3D», dibujalo y tocá «Guardar plano». Para mandárselo a un cliente, tocá «Publicar para clientes» y enviá el link por WhatsApp.
+
+### Pantalla nueva del plano 3D (26/11/2026)
+- El plano ocupa toda la pantalla. Abajo hay un dock con 5 categorías (Editar, Construir, Aberturas, Interior, Techo) y arriba las plantas y el selector 2D · 3D · Recorrer.
+- **Guardar plano, publicar y volver al panel** están ahora en el menú ☰ (arriba a la derecha), junto con exportar, superficies y obra gruesa.
+- En el link público para clientes se ve el plano arriba y debajo los datos de la inmobiliaria con el botón «Consultar por WhatsApp».
+
