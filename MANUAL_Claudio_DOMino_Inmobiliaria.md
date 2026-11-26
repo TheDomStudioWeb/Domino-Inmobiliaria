@@ -98,4 +98,6 @@ La pantalla de ingreso muestra un solo botón dorado **Ingresar**. Al tocarlo, e
 
 - Detalles del editor (26/11/2026): alto de ventanas con dintel a 2,15 m, vano libre sin puerta, medidas de muebles editables y herramienta «Recortar tramo» para borrar parte de una pared.
 
+- Barandas (vidrio, barrotes, cables, madera, muro bajo) y balcones techados o descubiertos (26/11/2026): ver el manual de DOMino Planos 3D.
+
 **Para responder por voz:** "¿Cómo le hago el plano a una propiedad?" → En el panel, en la tarjeta de la propiedad, tocá «Plano 3D», dibujalo y tocá «Guardar plano». Para mandárselo a un cliente, tocá «Publicar para clientes» y enviá el link por WhatsApp.
