@@ -100,4 +100,6 @@ La pantalla de ingreso muestra un solo botón dorado **Ingresar**. Al tocarlo, e
 
 - Barandas (vidrio, barrotes, cables, madera, muro bajo) y balcones techados o descubiertos (26/11/2026): ver el manual de DOMino Planos 3D.
 
+- Techos (26/11/2026): plano, una, dos y cuatro aguas, bóveda y cúpula; cubierta de chapa, teja, losa, madera o ladrillo visto; botón para ocultarlo en la maqueta. Ver el manual de DOMino Planos 3D.
+
 **Para responder por voz:** "¿Cómo le hago el plano a una propiedad?" → En el panel, en la tarjeta de la propiedad, tocá «Plano 3D», dibujalo y tocá «Guardar plano». Para mandárselo a un cliente, tocá «Publicar para clientes» y enviá el link por WhatsApp.
