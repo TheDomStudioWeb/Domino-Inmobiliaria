@@ -152,7 +152,8 @@ body.sheet-on .dock{display:none}
 .sheet .sx{position:sticky;top:0;float:right;margin:0 0 4px 8px;z-index:1;background:var(--panel)}
 .sheet .edit{display:block;border:0;padding:4px 0 0;margin:0;background:transparent}
 .sheet::before{content:"";display:block;width:40px;height:4px;border-radius:2px;background:var(--line);margin:2px auto 8px}
-#v3 .cam{left:0;right:0;bottom:0;max-width:none;justify-content:center;flex-wrap:nowrap;overflow-x:auto;gap:4px;border-width:1px 0 0;border-radius:0;padding:8px 10px max(10px,env(safe-area-inset-bottom));z-index:3}
+#v3 .cam>:first-child{margin-left:auto}#v3 .cam>:last-child{margin-right:auto}
+#v3 .cam{left:0;right:0;bottom:0;max-width:none;justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;gap:4px;border-width:1px 0 0;border-radius:0;padding:8px 10px max(10px,env(safe-area-inset-bottom));z-index:3}
 #v3 .cam button{min-height:44px;font-size:13px;padding:0 10px;color:var(--ink);white-space:nowrap;flex:none}
 #v3 .cam button.on{color:var(--ongold,#0A0A0A)}
 .joy{bottom:90px}
@@ -181,6 +182,13 @@ body.viewer .drawer{position:static;transform:none;width:auto;box-shadow:none;di
 body.viewer .dhead,body.viewer #menub,body.viewer .scrim{display:none}
 body.viewer .drawer .wrap{max-width:1000px;margin:0 auto;overflow:visible}
 @media (prefers-reduced-motion:reduce){.drawer,.cats .notch{transition:none}}
+.tourbar{position:absolute;left:0;right:0;bottom:0;z-index:4;display:none;flex-direction:column;gap:8px;padding:10px 12px max(12px,env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(0,0,0,.55))}
+#v3.touring .tourbar{display:flex}body.touring .fl,body.touring .vsw{display:none}#v3.touring .cam,#v3.touring .joy,#v3.touring .tag{display:none}
+.tourbar .tl{align-self:flex-start;font:700 15px Montserrat,sans-serif;color:#fff;background:rgba(10,10,10,.55);padding:8px 14px;border-radius:999px;opacity:0;transition:opacity .3s}.tourbar .tl.show{opacity:1}
+.tp{height:4px;background:rgba(255,255,255,.3);border-radius:2px;overflow:hidden}.tp i{display:block;height:100%;width:0;background:var(--gold)}
+.tourbar .tbt{display:flex;gap:8px;justify-content:flex-end}.tourbar .tbt button{min-height:44px;background:rgba(255,255,255,.92);color:#0A0A0A;border-color:transparent}
+.vprog{margin-top:8px}.vprog .tp{background:var(--line);height:6px}.vprog span{display:block;font-size:13px;color:var(--mute);margin-top:4px}
+#qbar button.on{background:var(--gold);border-color:var(--gold);color:var(--ongold,#0A0A0A)}
 </style>
 </head>
 <body>
@@ -195,7 +203,7 @@ body.viewer .drawer .wrap{max-width:1000px;margin:0 auto;overflow:visible}
   <div class="box" id="pbox"><span class="tag">Plano</span><canvas id="plan" aria-label="Plano 2D editable"></canvas><canvas class="loupe" id="loupe"></canvas></div>
   <div class="box" id="v3"><span class="tag" id="tag3">Maqueta 3D: arrastrá para girar, pellizcá para acercar</span>
     <div class="joy" id="joy"><i></i></div>
-    <div class="cam glass"><button id="roofb" class="on">Techo</button><button id="allb">Todas las plantas</button><button id="iso">3/4</button><button id="top">Superior</button><button id="fs" class="ic" aria-label="Pantalla completa" title="Pantalla completa"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg></button></div>
+    <div class="cam glass"><button id="roofb" class="on">Techo</button><button id="allb">Todas las plantas</button><button id="iso">3/4</button><button id="top">Superior</button><button id="tourb" aria-label="Recorrido automático"><svg aria-hidden="true" viewBox="0 0 24 24" style="width:14px;height:14px;vertical-align:-2px;margin-right:4px;fill:currentColor"><path d="M7 4l13 8-13 8z"/></svg>Recorrido</button><button id="fs" class="ic" aria-label="Pantalla completa" title="Pantalla completa"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg></button></div>
   </div>
   <div class="fl glass" id="floors" role="group" aria-label="Plantas"></div>
   <div class="vsw glass" role="group" aria-label="Vista"><button data-v="2d" class="on">2D</button><button data-v="3d">3D</button><button id="walk">Recorrer</button></div>
@@ -248,6 +256,10 @@ body.viewer .drawer .wrap{max-width:1000px;margin:0 auto;overflow:visible}
   </div>
   <section class="dsec edit-only"><h2>Plantas</h2><div class="flset" id="flset"></div></section>
   <section class="dsec"><h2>Exportar</h2><div class="bar xbar"><button class="ghost" id="xpdf">PDF</button><button class="ghost" id="xplan">Imagen del plano</button><button class="ghost" id="x3d">Imagen 3D</button></div></section>
+  <section class="dsec" id="vidsec"><h2>Video del recorrido</h2><p class="cloud" style="margin:0 0 8px">Recorre la casa sola: entra por la puerta, pasa por cada ambiente, sube la escalera y sale al balcón. Se descarga como video para WhatsApp o redes.</p>
+    <div class="bar"><button class="ghost" id="tourplay">Ver recorrido</button><button class="ghost" id="vidv">Video vertical</button><button class="ghost" id="vidh">Video horizontal</button></div>
+    <div class="vprog" id="vprog" hidden><div class="tp"><i></i></div><span>Generando video… 0 %</span></div></section>
+  <section class="dsec"><h2>Calidad de la maqueta 3D</h2><div class="bar" id="qbar"><button data-q="auto">Automática</button><button data-q="alta">Alta</button><button data-q="media">Media</button><button data-q="liviana">Liviana</button></div><p class="cloud" id="qnote" style="margin:6px 0 0"></p></section>
   <section class="dsec edit-only"><h2>Plano</h2><div class="bar"><button class="ghost" id="sample">Plano de ejemplo</button><button class="ghost" id="clear">Vaciar</button></div></section>
   <div id="err">No se pudo cargar el motor 3D. El plano 2D sigue funcionando.</div>
   <section class="dsec"><h2>Superficies</h2><div class="stats" id="stats"></div><div id="rooms"></div></section>
@@ -259,6 +271,9 @@ body.viewer .drawer .wrap{max-width:1000px;margin:0 auto;overflow:visible}
 </div>
 <div class="modal" id="modal"><div><b id="mtitle"></b><p class="note" id="mtext"></p><img id="mimg" alt="Vista previa de la exportación"><button id="mclose">Cerrar</button></div></div>
 
+<script>/* mp4-muxer 5.2.2 · MIT · (c) 2023 Vanilagy · github.com/Vanilagy/mp4-muxer */
+"use strict";var Mp4Muxer=(()=>{var e=Object.defineProperty,t=Object.getOwnPropertyDescriptor,i=Object.getOwnPropertyNames,s=Object.prototype.hasOwnProperty,a=(e,t,i)=>{if(!t.has(e))throw TypeError("Cannot "+i)},r=(e,t,i)=>(a(e,t,"read from private field"),i?i.call(e):t.get(e)),n=(e,t,i)=>{if(t.has(e))throw TypeError("Cannot add the same private member more than once");t instanceof WeakSet?t.add(e):t.set(e,i)},o=(e,t,i,s)=>(a(e,t,"write to private field"),s?s.call(e,i):t.set(e,i),i),h=(e,t,i)=>(a(e,t,"access private method"),i),l={};((t,i)=>{for(var s in i)e(t,s,{get:i[s],enumerable:!0})})(l,{ArrayBufferTarget:()=>Me,FileSystemWritableFileStreamTarget:()=>Oe,Muxer:()=>Rt,StreamTarget:()=>We});var d,f,u,m,p,c,w,g,b=new Uint8Array(8),y=new DataView(b.buffer),k=e=>[(e%256+256)%256],T=e=>(y.setUint16(0,e,!1),[b[0],b[1]]),C=e=>(y.setUint32(0,e,!1),[b[1],b[2],b[3]]),v=e=>(y.setUint32(0,e,!1),[b[0],b[1],b[2],b[3]]),S=e=>(y.setUint32(0,Math.floor(e/2**32),!1),y.setUint32(4,e,!1),[b[0],b[1],b[2],b[3],b[4],b[5],b[6],b[7]]),x=e=>(y.setInt16(0,256*e,!1),[b[0],b[1]]),z=e=>(y.setInt32(0,65536*e,!1),[b[0],b[1],b[2],b[3]]),E=e=>(y.setInt32(0,2**30*e,!1),[b[0],b[1],b[2],b[3]]),A=(e,t=!1)=>{let i=Array(e.length).fill(null).map((t,i)=>e.charCodeAt(i));return t&&i.push(0),i},M=e=>e&&e[e.length-1],W=e=>{let t;for(let i of e)(!t||i.presentationTimestamp>t.presentationTimestamp)&&(t=i);return t},O=(e,t,i=!0)=>{let s=e*t;return i?Math.round(s):s},B=e=>{let t=e*(Math.PI/180),i=Math.cos(t),s=Math.sin(t);return[i,s,0,-s,i,0,0,0,1]},U=B(0),D=e=>[z(e[0]),z(e[1]),E(e[2]),z(e[3]),z(e[4]),E(e[5]),z(e[6]),z(e[7]),E(e[8])],j=e=>e?"object"!=typeof e?e:Array.isArray(e)?e.map(j):Object.fromEntries(Object.entries(e).map(([e,t])=>[e,j(t)])):e,R=e=>e>=0&&e<2**32,I=(e,t,i)=>({type:e,contents:t&&new Uint8Array(t.flat(10)),children:i}),N=(e,t,i,s,a)=>I(e,[k(t),C(i),s??[]],a),V=e=>({type:"mdat",largeSize:e}),F=(e,t,i=!1)=>I("moov",null,[L(t,e),...e.map(e=>$(e,t)),i?me(e):null]),L=(e,t)=>{let i=O(Math.max(0,...t.filter(e=>e.samples.length>0).map(e=>{const t=W(e.samples);return t.presentationTimestamp+t.duration})),Bt),s=Math.max(...t.map(e=>e.id))+1,a=!R(e)||!R(i),r=a?S:v;return N("mvhd",+a,0,[r(e),r(e),v(Bt),r(i),z(1),x(1),Array(10).fill(0),D(U),Array(24).fill(0),v(s)])},$=(e,t)=>I("trak",null,[P(e,t),H(e,t)]),P=(e,t)=>{let i,s=W(e.samples),a=O(s?s.presentationTimestamp+s.duration:0,Bt),r=!R(t)||!R(a),n=r?S:v;return i="video"===e.info.type?"number"==typeof e.info.rotation?B(e.info.rotation):e.info.rotation:U,N("tkhd",+r,3,[n(t),n(t),v(e.id),v(0),n(a),Array(8).fill(0),T(0),T(0),x("audio"===e.info.type?1:0),T(0),D(i),z("video"===e.info.type?e.info.width:0),z("video"===e.info.type?e.info.height:0)])},H=(e,t)=>I("mdia",null,[_(e,t),q("video"===e.info.type?"vide":"soun"),G(e)]),_=(e,t)=>{let i=W(e.samples),s=O(i?i.presentationTimestamp+i.duration:0,e.timescale),a=!R(t)||!R(s),r=a?S:v;return N("mdhd",+a,0,[r(t),r(t),v(e.timescale),r(s),T(21956),T(0)])},q=e=>N("hdlr",0,0,[A("mhlr"),A(e),v(0),v(0),v(0),A("mp4-muxer-hdlr",!0)]),G=e=>I("minf",null,["video"===e.info.type?J():K(),Q(),Z(e)]),J=()=>N("vmhd",0,1,[T(0),T(0),T(0),T(0)]),K=()=>N("smhd",0,0,[T(0),T(0)]),Q=()=>I("dinf",null,[X()]),X=()=>N("dref",0,0,[v(1)],[Y()]),Y=()=>N("url ",0,1),Z=e=>{const t=e.compositionTimeOffsetTable.length>1||e.compositionTimeOffsetTable.some(e=>0!==e.sampleCompositionTimeOffset);return I("stbl",null,[ee(e),oe(e),he(e),le(e),de(e),fe(e),t?ue(e):null])},ee=e=>N("stsd",0,0,[v(1)],["video"===e.info.type?te(Se[e.info.codec],e):ne(ze[e.info.codec],e)]),te=(e,t)=>{return I(e,[Array(6).fill(0),T(1),T(0),T(0),Array(12).fill(0),T(t.info.width),T(t.info.height),v(4718592),v(4718592),v(0),T(1),Array(32).fill(0),T(24),(i=65535,y.setInt16(0,i,!1),[b[0],b[1]])],[xe[t.info.codec](t),t.info.decoderConfig.colorSpace?re(t):null]);var i},ie={bt709:1,bt470bg:5,smpte170m:6},se={bt709:1,smpte170m:6,"iec61966-2-1":13},ae={rgb:0,bt709:1,bt470bg:5,smpte170m:6},re=e=>I("colr",[A("nclx"),T(ie[e.info.decoderConfig.colorSpace.primaries]),T(se[e.info.decoderConfig.colorSpace.transfer]),T(ae[e.info.decoderConfig.colorSpace.matrix]),k((e.info.decoderConfig.colorSpace.fullRange?1:0)<<7)]),ne=(e,t)=>I(e,[Array(6).fill(0),T(1),T(0),T(0),v(0),T(t.info.numberOfChannels),T(16),T(0),T(0),z(t.info.sampleRate)],[Ee[t.info.codec](t)]),oe=e=>N("stts",0,0,[v(e.timeToSampleTable.length),e.timeToSampleTable.map(e=>[v(e.sampleCount),v(e.sampleDelta)])]),he=e=>{if(e.samples.every(e=>"key"===e.type))return null;let t=[...e.samples.entries()].filter(([,e])=>"key"===e.type);return N("stss",0,0,[v(t.length),t.map(([e])=>v(e+1))])},le=e=>N("stsc",0,0,[v(e.compactlyCodedChunkTable.length),e.compactlyCodedChunkTable.map(e=>[v(e.firstChunk),v(e.samplesPerChunk),v(1)])]),de=e=>N("stsz",0,0,[v(0),v(e.samples.length),e.samples.map(e=>v(e.size))]),fe=e=>e.finalizedChunks.length>0&&M(e.finalizedChunks).offset>=2**32?N("co64",0,0,[v(e.finalizedChunks.length),e.finalizedChunks.map(e=>S(e.offset))]):N("stco",0,0,[v(e.finalizedChunks.length),e.finalizedChunks.map(e=>v(e.offset))]),ue=e=>N("ctts",0,0,[v(e.compositionTimeOffsetTable.length),e.compositionTimeOffsetTable.map(e=>[v(e.sampleCount),v(e.sampleCompositionTimeOffset)])]),me=e=>I("mvex",null,e.map(pe)),pe=e=>N("trex",0,0,[v(e.id),v(1),v(0),v(0),v(0)]),ce=(e,t)=>I("moof",null,[we(e),...t.map(be)]),we=e=>N("mfhd",0,0,[v(e)]),ge=e=>{let t=0,i=0,s="delta"===e.type;return i|=+s,t|=s?1:2,t<<24|i<<16},be=e=>I("traf",null,[ye(e),ke(e),Te(e)]),ye=e=>{let t=0;t|=8,t|=16,t|=32,t|=131072;let i=e.currentChunk.samples[1]??e.currentChunk.samples[0],s={duration:i.timescaleUnitsToNextSample,size:i.size,flags:ge(i)};return N("tfhd",0,131128,[v(e.id),v(s.duration),v(s.size),v(s.flags)])},ke=e=>N("tfdt",1,0,[S(O(e.currentChunk.startTimestamp,e.timescale))]),Te=e=>{let t=e.currentChunk.samples.map(e=>e.timescaleUnitsToNextSample),i=e.currentChunk.samples.map(e=>e.size),s=e.currentChunk.samples.map(ge),a=e.currentChunk.samples.map(t=>O(t.presentationTimestamp-t.decodeTimestamp,e.timescale)),r=new Set(t),n=new Set(i),o=new Set(s),h=new Set(a),l=2===o.size&&s[0]!==s[1],d=r.size>1,f=n.size>1,u=!l&&o.size>1,m=h.size>1||[...h].some(e=>0!==e),p=0;return p|=1,p|=4*+l,p|=256*+d,p|=512*+f,p|=1024*+u,p|=2048*+m,N("trun",1,p,[v(e.currentChunk.samples.length),v(e.currentChunk.offset-e.currentChunk.moofOffset||0),l?v(s[0]):[],e.currentChunk.samples.map((e,r)=>{return[d?v(t[r]):[],f?v(i[r]):[],u?v(s[r]):[],m?(n=a[r],y.setInt32(0,n,!1),[b[0],b[1],b[2],b[3]]):[]];var n})])},Ce=(e,t)=>N("tfra",1,0,[v(e.id),v(63),v(e.finalizedChunks.length),e.finalizedChunks.map(i=>[S(O(i.startTimestamp,e.timescale)),S(i.moofOffset),v(t+1),v(1),v(1)])]),ve=()=>N("mfro",0,0,[v(0)]),Se={avc:"avc1",hevc:"hvc1",vp9:"vp09",av1:"av01"},xe={avc:e=>e.info.decoderConfig&&I("avcC",[...new Uint8Array(e.info.decoderConfig.description)]),hevc:e=>e.info.decoderConfig&&I("hvcC",[...new Uint8Array(e.info.decoderConfig.description)]),vp9:e=>{if(!e.info.decoderConfig)return null;let t=e.info.decoderConfig;if(!t.colorSpace)throw new Error("'colorSpace' is required in the decoder config for VP9.");let i=t.codec.split("."),s=Number(i[1]),a=Number(i[2]),r=0+(Number(i[3])<<4)+Number(t.colorSpace.fullRange);return N("vpcC",1,0,[k(s),k(a),k(r),k(2),k(2),k(2),T(0)])},av1:()=>I("av1C",[129,0,0,0])},ze={aac:"mp4a",opus:"Opus"},Ee={aac:e=>{let t=new Uint8Array(e.info.decoderConfig.description);return N("esds",0,0,[v(58753152),k(32+t.byteLength),T(1),k(0),v(75530368),k(18+t.byteLength),k(64),k(21),C(0),v(130071),v(130071),v(92307584),k(t.byteLength),...t,v(109084800),k(1),k(2)])},opus:e=>{let t=3840,i=0;const s=e.info.decoderConfig?.description;if(s){if(s.byteLength<18)throw new TypeError("Invalid decoder description provided for Opus; must be at least 18 bytes long.");const e=ArrayBuffer.isView(s)?new DataView(s.buffer,s.byteOffset,s.byteLength):new DataView(s);t=e.getUint16(10,!0),i=e.getInt16(14,!0)}return I("dOps",[k(0),k(e.info.numberOfChannels),T(t),v(e.info.sampleRate),x(i),k(0)])}},Ae=(Symbol("isTarget"),class{}),Me=class extends Ae{constructor(){super(...arguments),this.buffer=null}},We=class extends Ae{constructor(e){if(super(),this.options=e,"object"!=typeof e)throw new TypeError("StreamTarget requires an options object to be passed to its constructor.");if(e.onData){if("function"!=typeof e.onData)throw new TypeError("options.onData, when provided, must be a function.");if(e.onData.length<2)throw new TypeError("options.onData, when provided, must be a function that takes in at least two arguments (data and position). Ignoring the position argument, which specifies the byte offset at which the data is to be written, can lead to broken outputs.")}if(void 0!==e.chunked&&"boolean"!=typeof e.chunked)throw new TypeError("options.chunked, when provided, must be a boolean.");if(void 0!==e.chunkSize&&(!Number.isInteger(e.chunkSize)||e.chunkSize<1024))throw new TypeError("options.chunkSize, when provided, must be an integer and not smaller than 1024.")}},Oe=class extends Ae{constructor(e,t){if(super(),this.stream=e,this.options=t,!(e instanceof FileSystemWritableFileStream))throw new TypeError("FileSystemWritableFileStreamTarget requires a FileSystemWritableFileStream instance.");if(void 0!==t&&"object"!=typeof t)throw new TypeError("FileSystemWritableFileStreamTarget's options, when provided, must be an object.");if(t&&void 0!==t.chunkSize&&(!Number.isInteger(t.chunkSize)||t.chunkSize<=0))throw new TypeError("options.chunkSize, when provided, must be a positive integer")}},Be=class{constructor(){this.pos=0,n(this,d,new Uint8Array(8)),n(this,f,new DataView(r(this,d).buffer)),this.offsets=new WeakMap}seek(e){this.pos=e}writeU32(e){r(this,f).setUint32(0,e,!1),this.write(r(this,d).subarray(0,4))}writeU64(e){r(this,f).setUint32(0,Math.floor(e/2**32),!1),r(this,f).setUint32(4,e,!1),this.write(r(this,d).subarray(0,8))}writeAscii(e){for(let t=0;t<e.length;t++)r(this,f).setUint8(t%8,e.charCodeAt(t)),t%8==7&&this.write(r(this,d));e.length%8!=0&&this.write(r(this,d).subarray(0,e.length%8))}writeBox(e){if(this.offsets.set(e,this.pos),e.contents&&!e.children)this.writeBoxHeader(e,e.size??e.contents.byteLength+8),this.write(e.contents);else{let t=this.pos;if(this.writeBoxHeader(e,0),e.contents&&this.write(e.contents),e.children)for(let t of e.children)t&&this.writeBox(t);let i=this.pos,s=e.size??i-t;this.seek(t),this.writeBoxHeader(e,s),this.seek(i)}}writeBoxHeader(e,t){this.writeU32(e.largeSize?1:t),this.writeAscii(e.type),e.largeSize&&this.writeU64(t)}measureBoxHeader(e){return 8+(e.largeSize?8:0)}patchBox(e){let t=this.pos;this.seek(this.offsets.get(e)),this.writeBox(e),this.seek(t)}measureBox(e){if(e.contents&&!e.children){return this.measureBoxHeader(e)+e.contents.byteLength}{let t=this.measureBoxHeader(e);if(e.contents&&(t+=e.contents.byteLength),e.children)for(let i of e.children)i&&(t+=this.measureBox(i));return t}}};d=new WeakMap,f=new WeakMap;var Ue=class extends Be{constructor(e){super(),n(this,w),n(this,u,void 0),n(this,m,new ArrayBuffer(65536)),n(this,p,new Uint8Array(r(this,m))),n(this,c,0),o(this,u,e)}write(e){h(this,w,g).call(this,this.pos+e.byteLength),r(this,p).set(e,this.pos),this.pos+=e.byteLength,o(this,c,Math.max(r(this,c),this.pos))}finalize(){h(this,w,g).call(this,this.pos),r(this,u).buffer=r(this,m).slice(0,Math.max(r(this,c),this.pos))}};u=new WeakMap,m=new WeakMap,p=new WeakMap,c=new WeakMap,w=new WeakSet,g=function(e){let t=r(this,m).byteLength;for(;t<e;)t*=2;if(t===r(this,m).byteLength)return;let i=new ArrayBuffer(t),s=new Uint8Array(i);s.set(r(this,p),0),o(this,m,i),o(this,p,s)};var De,je,Re,Ie,Ne,Ve,Fe,Le,$e,Pe,He,_e,qe,Ge=class extends Be{constructor(e){super(),n(this,Ve),n(this,Le),n(this,Pe),n(this,_e),n(this,De,void 0),n(this,je,[]),n(this,Re,void 0),n(this,Ie,void 0),n(this,Ne,[]),o(this,De,e),o(this,Re,e.options?.chunked??!1),o(this,Ie,e.options?.chunkSize??16777216)}write(e){r(this,je).push({data:e.slice(),start:this.pos}),this.pos+=e.byteLength}flush(){if(0===r(this,je).length)return;let e=[],t=[...r(this,je)].sort((e,t)=>e.start-t.start);e.push({start:t[0].start,size:t[0].data.byteLength});for(let i=1;i<t.length;i++){let s=e[e.length-1],a=t[i];a.start<=s.start+s.size?s.size=Math.max(s.size,a.start+a.data.byteLength-s.start):e.push({start:a.start,size:a.data.byteLength})}for(let t of e){t.data=new Uint8Array(t.size);for(let e of r(this,je))t.start<=e.start&&e.start<t.start+t.size&&t.data.set(e.data,e.start-t.start);r(this,Re)?(h(this,Ve,Fe).call(this,t.data,t.start),h(this,_e,qe).call(this)):r(this,De).options.onData?.(t.data,t.start)}r(this,je).length=0}finalize(){r(this,Re)&&h(this,_e,qe).call(this,!0)}};De=new WeakMap,je=new WeakMap,Re=new WeakMap,Ie=new WeakMap,Ne=new WeakMap,Ve=new WeakSet,Fe=function(e,t){let i=r(this,Ne).findIndex(e=>e.start<=t&&t<e.start+r(this,Ie));-1===i&&(i=h(this,Pe,He).call(this,t));let s=r(this,Ne)[i],a=t-s.start,n=e.subarray(0,Math.min(r(this,Ie)-a,e.byteLength));s.data.set(n,a);let o={start:a,end:a+n.byteLength};if(h(this,Le,$e).call(this,s,o),0===s.written[0].start&&s.written[0].end===r(this,Ie)&&(s.shouldFlush=!0),r(this,Ne).length>2){for(let e=0;e<r(this,Ne).length-1;e++)r(this,Ne)[e].shouldFlush=!0;h(this,_e,qe).call(this)}n.byteLength<e.byteLength&&h(this,Ve,Fe).call(this,e.subarray(n.byteLength),t+n.byteLength)},Le=new WeakSet,$e=function(e,t){let i=0,s=e.written.length-1,a=-1;for(;i<=s;){let r=Math.floor(i+(s-i+1)/2);e.written[r].start<=t.start?(i=r+1,a=r):s=r-1}for(e.written.splice(a+1,0,t),(-1===a||e.written[a].end<t.start)&&a++;a<e.written.length-1&&e.written[a].end>=e.written[a+1].start;)e.written[a].end=Math.max(e.written[a].end,e.written[a+1].end),e.written.splice(a+1,1)},Pe=new WeakSet,He=function(e){let t={start:Math.floor(e/r(this,Ie))*r(this,Ie),data:new Uint8Array(r(this,Ie)),written:[],shouldFlush:!1};return r(this,Ne).push(t),r(this,Ne).sort((e,t)=>e.start-t.start),r(this,Ne).indexOf(t)},_e=new WeakSet,qe=function(e=!1){for(let t=0;t<r(this,Ne).length;t++){let i=r(this,Ne)[t];if(i.shouldFlush||e){for(let e of i.written)r(this,De).options.onData?.(i.data.subarray(e.start,e.end),i.start+e.start);r(this,Ne).splice(t--,1)}}};var Je,Ke,Qe,Xe,Ye,Ze,et,tt,it,st,at,rt,nt,ot,ht,lt,dt,ft,ut,mt,pt,ct,wt,gt,bt,yt,kt,Tt,Ct,vt,St,xt,zt,Et,At,Mt,Wt,Ot=class extends Ge{constructor(e){super(new We({onData:(t,i)=>e.stream.write({type:"write",data:t,position:i}),chunked:!0,chunkSize:e.options?.chunkSize}))}},Bt=1e3,Ut=["avc","hevc","vp9","av1"],Dt=["aac","opus"],jt=["strict","offset","cross-track-offset"],Rt=class{constructor(e){if(n(this,nt),n(this,ht),n(this,dt),n(this,ut),n(this,pt),n(this,wt),n(this,bt),n(this,kt),n(this,Ct),n(this,St),n(this,zt),n(this,At),n(this,Je,void 0),n(this,Ke,void 0),n(this,Qe,void 0),n(this,Xe,void 0),n(this,Ye,null),n(this,Ze,null),n(this,et,Math.floor(Date.now()/1e3)+2082844800),n(this,tt,[]),n(this,it,1),n(this,st,[]),n(this,at,[]),n(this,rt,!1),h(this,nt,ot).call(this,e),e.video=j(e.video),e.audio=j(e.audio),e.fastStart=j(e.fastStart),this.target=e.target,o(this,Je,{firstTimestampBehavior:"strict",...e}),e.target instanceof Me)o(this,Ke,new Ue(e.target));else if(e.target instanceof We)o(this,Ke,new Ge(e.target));else{if(!(e.target instanceof Oe))throw new Error(`Invalid target: ${e.target}`);o(this,Ke,new Ot(e.target))}h(this,ut,mt).call(this),h(this,ht,lt).call(this)}addVideoChunk(e,t,i,s){if(!(e instanceof EncodedVideoChunk))throw new TypeError("addVideoChunk's first argument (sample) must be of type EncodedVideoChunk.");if(t&&"object"!=typeof t)throw new TypeError("addVideoChunk's second argument (meta), when provided, must be an object.");if(void 0!==i&&(!Number.isFinite(i)||i<0))throw new TypeError("addVideoChunk's third argument (timestamp), when provided, must be a non-negative real number.");if(void 0!==s&&!Number.isFinite(s))throw new TypeError("addVideoChunk's fourth argument (compositionTimeOffset), when provided, must be a real number.");let a=new Uint8Array(e.byteLength);e.copyTo(a),this.addVideoChunkRaw(a,e.type,i??e.timestamp,e.duration,t,s)}addVideoChunkRaw(e,t,i,s,a,n){if(!(e instanceof Uint8Array))throw new TypeError("addVideoChunkRaw's first argument (data) must be an instance of Uint8Array.");if("key"!==t&&"delta"!==t)throw new TypeError("addVideoChunkRaw's second argument (type) must be either 'key' or 'delta'.");if(!Number.isFinite(i)||i<0)throw new TypeError("addVideoChunkRaw's third argument (timestamp) must be a non-negative real number.");if(!Number.isFinite(s)||s<0)throw new TypeError("addVideoChunkRaw's fourth argument (duration) must be a non-negative real number.");if(a&&"object"!=typeof a)throw new TypeError("addVideoChunkRaw's fifth argument (meta), when provided, must be an object.");if(void 0!==n&&!Number.isFinite(n))throw new TypeError("addVideoChunkRaw's sixth argument (compositionTimeOffset), when provided, must be a real number.");if(h(this,At,Mt).call(this),!r(this,Je).video)throw new Error("No video track declared.");if("object"==typeof r(this,Je).fastStart&&r(this,Ye).samples.length===r(this,Je).fastStart.expectedVideoChunks)throw new Error(`Cannot add more video chunks than specified in 'fastStart' (${r(this,Je).fastStart.expectedVideoChunks}).`);let o=h(this,wt,gt).call(this,r(this,Ye),e,t,i,s,a,n);if("fragmented"===r(this,Je).fastStart&&r(this,Ze)){for(;r(this,at).length>0&&r(this,at)[0].decodeTimestamp<=o.decodeTimestamp;){let e=r(this,at).shift();h(this,bt,yt).call(this,r(this,Ze),e)}o.decodeTimestamp<=r(this,Ze).lastDecodeTimestamp?h(this,bt,yt).call(this,r(this,Ye),o):r(this,st).push(o)}else h(this,bt,yt).call(this,r(this,Ye),o)}addAudioChunk(e,t,i){if(!(e instanceof EncodedAudioChunk))throw new TypeError("addAudioChunk's first argument (sample) must be of type EncodedAudioChunk.");if(t&&"object"!=typeof t)throw new TypeError("addAudioChunk's second argument (meta), when provided, must be an object.");if(void 0!==i&&(!Number.isFinite(i)||i<0))throw new TypeError("addAudioChunk's third argument (timestamp), when provided, must be a non-negative real number.");let s=new Uint8Array(e.byteLength);e.copyTo(s),this.addAudioChunkRaw(s,e.type,i??e.timestamp,e.duration,t)}addAudioChunkRaw(e,t,i,s,a){if(!(e instanceof Uint8Array))throw new TypeError("addAudioChunkRaw's first argument (data) must be an instance of Uint8Array.");if("key"!==t&&"delta"!==t)throw new TypeError("addAudioChunkRaw's second argument (type) must be either 'key' or 'delta'.");if(!Number.isFinite(i)||i<0)throw new TypeError("addAudioChunkRaw's third argument (timestamp) must be a non-negative real number.");if(!Number.isFinite(s)||s<0)throw new TypeError("addAudioChunkRaw's fourth argument (duration) must be a non-negative real number.");if(a&&"object"!=typeof a)throw new TypeError("addAudioChunkRaw's fifth argument (meta), when provided, must be an object.");if(h(this,At,Mt).call(this),!r(this,Je).audio)throw new Error("No audio track declared.");if("object"==typeof r(this,Je).fastStart&&r(this,Ze).samples.length===r(this,Je).fastStart.expectedAudioChunks)throw new Error(`Cannot add more audio chunks than specified in 'fastStart' (${r(this,Je).fastStart.expectedAudioChunks}).`);let n=h(this,wt,gt).call(this,r(this,Ze),e,t,i,s,a);if("fragmented"===r(this,Je).fastStart&&r(this,Ye)){for(;r(this,st).length>0&&r(this,st)[0].decodeTimestamp<=n.decodeTimestamp;){let e=r(this,st).shift();h(this,bt,yt).call(this,r(this,Ye),e)}n.decodeTimestamp<=r(this,Ye).lastDecodeTimestamp?h(this,bt,yt).call(this,r(this,Ze),n):r(this,at).push(n)}else h(this,bt,yt).call(this,r(this,Ze),n)}finalize(){if(r(this,rt))throw new Error("Cannot finalize a muxer more than once.");if("fragmented"===r(this,Je).fastStart){for(let e of r(this,st))h(this,bt,yt).call(this,r(this,Ye),e);for(let e of r(this,at))h(this,bt,yt).call(this,r(this,Ze),e);h(this,St,xt).call(this,!1)}else r(this,Ye)&&h(this,Ct,vt).call(this,r(this,Ye)),r(this,Ze)&&h(this,Ct,vt).call(this,r(this,Ze));let e=[r(this,Ye),r(this,Ze)].filter(Boolean);if("in-memory"===r(this,Je).fastStart){let t;for(let i=0;i<2;i++){let i=F(e,r(this,et)),s=r(this,Ke).measureBox(i);t=r(this,Ke).measureBox(r(this,Xe));let a=r(this,Ke).pos+s+t;for(let e of r(this,tt)){e.offset=a;for(let{data:i}of e.samples)a+=i.byteLength,t+=i.byteLength}if(a<2**32)break;t>=2**32&&(r(this,Xe).largeSize=!0)}let i=F(e,r(this,et));r(this,Ke).writeBox(i),r(this,Xe).size=t,r(this,Ke).writeBox(r(this,Xe));for(let e of r(this,tt))for(let t of e.samples)r(this,Ke).write(t.data),t.data=null}else if("fragmented"===r(this,Je).fastStart){let t=r(this,Ke).pos,i=(e=>I("mfra",null,[...e.map(Ce),ve()]))(e);r(this,Ke).writeBox(i);let s=r(this,Ke).pos-t;r(this,Ke).seek(r(this,Ke).pos-4),r(this,Ke).writeU32(s)}else{let t=r(this,Ke).offsets.get(r(this,Xe)),i=r(this,Ke).pos-t;r(this,Xe).size=i,r(this,Xe).largeSize=i>=2**32,r(this,Ke).patchBox(r(this,Xe));let s=F(e,r(this,et));if("object"==typeof r(this,Je).fastStart){r(this,Ke).seek(r(this,Qe)),r(this,Ke).writeBox(s);let e=t-r(this,Ke).pos;r(this,Ke).writeBox({type:"free",size:e})}else r(this,Ke).writeBox(s)}h(this,zt,Et).call(this),r(this,Ke).finalize(),o(this,rt,!0)}};return Je=new WeakMap,Ke=new WeakMap,Qe=new WeakMap,Xe=new WeakMap,Ye=new WeakMap,Ze=new WeakMap,et=new WeakMap,tt=new WeakMap,it=new WeakMap,st=new WeakMap,at=new WeakMap,rt=new WeakMap,nt=new WeakSet,ot=function(e){if("object"!=typeof e)throw new TypeError("The muxer requires an options object to be passed to its constructor.");if(!(e.target instanceof Ae))throw new TypeError("The target must be provided and an instance of Target.");if(e.video){if(!Ut.includes(e.video.codec))throw new TypeError(`Unsupported video codec: ${e.video.codec}`);if(!Number.isInteger(e.video.width)||e.video.width<=0)throw new TypeError(`Invalid video width: ${e.video.width}. Must be a positive integer.`);if(!Number.isInteger(e.video.height)||e.video.height<=0)throw new TypeError(`Invalid video height: ${e.video.height}. Must be a positive integer.`);const t=e.video.rotation;if("number"==typeof t&&![0,90,180,270].includes(t))throw new TypeError(`Invalid video rotation: ${t}. Has to be 0, 90, 180 or 270.`);if(Array.isArray(t)&&(9!==t.length||t.some(e=>"number"!=typeof e)))throw new TypeError(`Invalid video transformation matrix: ${t.join()}`);if(void 0!==e.video.frameRate&&(!Number.isInteger(e.video.frameRate)||e.video.frameRate<=0))throw new TypeError(`Invalid video frame rate: ${e.video.frameRate}. Must be a positive integer.`)}if(e.audio){if(!Dt.includes(e.audio.codec))throw new TypeError(`Unsupported audio codec: ${e.audio.codec}`);if(!Number.isInteger(e.audio.numberOfChannels)||e.audio.numberOfChannels<=0)throw new TypeError(`Invalid number of audio channels: ${e.audio.numberOfChannels}. Must be a positive integer.`);if(!Number.isInteger(e.audio.sampleRate)||e.audio.sampleRate<=0)throw new TypeError(`Invalid audio sample rate: ${e.audio.sampleRate}. Must be a positive integer.`)}if(e.firstTimestampBehavior&&!jt.includes(e.firstTimestampBehavior))throw new TypeError(`Invalid first timestamp behavior: ${e.firstTimestampBehavior}`);if("object"==typeof e.fastStart){if(e.video){if(void 0===e.fastStart.expectedVideoChunks)throw new TypeError("'fastStart' is an object but is missing property 'expectedVideoChunks'.");if(!Number.isInteger(e.fastStart.expectedVideoChunks)||e.fastStart.expectedVideoChunks<0)throw new TypeError("'expectedVideoChunks' must be a non-negative integer.")}if(e.audio){if(void 0===e.fastStart.expectedAudioChunks)throw new TypeError("'fastStart' is an object but is missing property 'expectedAudioChunks'.");if(!Number.isInteger(e.fastStart.expectedAudioChunks)||e.fastStart.expectedAudioChunks<0)throw new TypeError("'expectedAudioChunks' must be a non-negative integer.")}}else if(![!1,"in-memory","fragmented"].includes(e.fastStart))throw new TypeError("'fastStart' option must be false, 'in-memory', 'fragmented' or an object.");if(void 0!==e.minFragmentDuration&&(!Number.isFinite(e.minFragmentDuration)||e.minFragmentDuration<0))throw new TypeError("'minFragmentDuration' must be a non-negative number.")},ht=new WeakSet,lt=function(){var e;if(r(this,Ke).writeBox((e={holdsAvc:"avc"===r(this,Je).video?.codec,fragmented:"fragmented"===r(this,Je).fastStart}).fragmented?I("ftyp",[A("iso5"),v(512),A("iso5"),A("iso6"),A("mp41")]):I("ftyp",[A("isom"),v(512),A("isom"),e.holdsAvc?A("avc1"):[],A("mp41")])),o(this,Qe,r(this,Ke).pos),"in-memory"===r(this,Je).fastStart)o(this,Xe,V(!1));else if("fragmented"===r(this,Je).fastStart);else{if("object"==typeof r(this,Je).fastStart){let e=h(this,dt,ft).call(this);r(this,Ke).seek(r(this,Ke).pos+e)}o(this,Xe,V(!0)),r(this,Ke).writeBox(r(this,Xe))}h(this,zt,Et).call(this)},dt=new WeakSet,ft=function(){if("object"!=typeof r(this,Je).fastStart)return;let e=0,t=[r(this,Je).fastStart.expectedVideoChunks,r(this,Je).fastStart.expectedAudioChunks];for(let i of t)i&&(e+=8*Math.ceil(2/3*i),e+=4*i,e+=12*Math.ceil(2/3*i),e+=4*i,e+=8*i);return e+=4096,e},ut=new WeakSet,mt=function(){if(r(this,Je).video&&o(this,Ye,{id:1,info:{type:"video",codec:r(this,Je).video.codec,width:r(this,Je).video.width,height:r(this,Je).video.height,rotation:r(this,Je).video.rotation??0,decoderConfig:null},timescale:r(this,Je).video.frameRate??57600,samples:[],finalizedChunks:[],currentChunk:null,firstDecodeTimestamp:void 0,lastDecodeTimestamp:-1,timeToSampleTable:[],compositionTimeOffsetTable:[],lastTimescaleUnits:null,lastSample:null,compactlyCodedChunkTable:[]}),r(this,Je).audio&&(o(this,Ze,{id:r(this,Je).video?2:1,info:{type:"audio",codec:r(this,Je).audio.codec,numberOfChannels:r(this,Je).audio.numberOfChannels,sampleRate:r(this,Je).audio.sampleRate,decoderConfig:null},timescale:r(this,Je).audio.sampleRate,samples:[],finalizedChunks:[],currentChunk:null,firstDecodeTimestamp:void 0,lastDecodeTimestamp:-1,timeToSampleTable:[],compositionTimeOffsetTable:[],lastTimescaleUnits:null,lastSample:null,compactlyCodedChunkTable:[]}),"aac"===r(this,Je).audio.codec)){let e=h(this,pt,ct).call(this,2,r(this,Je).audio.sampleRate,r(this,Je).audio.numberOfChannels);r(this,Ze).info.decoderConfig={codec:r(this,Je).audio.codec,description:e,numberOfChannels:r(this,Je).audio.numberOfChannels,sampleRate:r(this,Je).audio.sampleRate}}},pt=new WeakSet,ct=function(e,t,i){let s=[96e3,88200,64e3,48e3,44100,32e3,24e3,22050,16e3,12e3,11025,8e3,7350].indexOf(t),a=i,r="";r+=e.toString(2).padStart(5,"0"),r+=s.toString(2).padStart(4,"0"),15===s&&(r+=t.toString(2).padStart(24,"0")),r+=a.toString(2).padStart(4,"0");let n=8*Math.ceil(r.length/8);r=r.padEnd(n,"0");let o=new Uint8Array(r.length/8);for(let e=0;e<r.length;e+=8)o[e/8]=parseInt(r.slice(e,e+8),2);return o},wt=new WeakSet,gt=function(e,t,i,s,a,r,n){let o=s/1e6,l=(s-(n??0))/1e6,d=a/1e6,f=h(this,kt,Tt).call(this,o,l,e);return o=f.presentationTimestamp,l=f.decodeTimestamp,r?.decoderConfig&&(null===e.info.decoderConfig?e.info.decoderConfig=r.decoderConfig:Object.assign(e.info.decoderConfig,r.decoderConfig)),{presentationTimestamp:o,decodeTimestamp:l,duration:d,data:t,size:t.byteLength,type:i,timescaleUnitsToNextSample:O(d,e.timescale)}},bt=new WeakSet,yt=function(e,t){"fragmented"!==r(this,Je).fastStart&&e.samples.push(t);const i=O(t.presentationTimestamp-t.decodeTimestamp,e.timescale);if(null!==e.lastTimescaleUnits){let s=O(t.decodeTimestamp,e.timescale,!1),a=Math.round(s-e.lastTimescaleUnits);if(e.lastTimescaleUnits+=a,e.lastSample.timescaleUnitsToNextSample=a,"fragmented"!==r(this,Je).fastStart){let t=M(e.timeToSampleTable);1===t.sampleCount?(t.sampleDelta=a,t.sampleCount++):t.sampleDelta===a?t.sampleCount++:(t.sampleCount--,e.timeToSampleTable.push({sampleCount:2,sampleDelta:a}));const s=M(e.compositionTimeOffsetTable);s.sampleCompositionTimeOffset===i?s.sampleCount++:e.compositionTimeOffsetTable.push({sampleCount:1,sampleCompositionTimeOffset:i})}}else e.lastTimescaleUnits=0,"fragmented"!==r(this,Je).fastStart&&(e.timeToSampleTable.push({sampleCount:1,sampleDelta:O(t.duration,e.timescale)}),e.compositionTimeOffsetTable.push({sampleCount:1,sampleCompositionTimeOffset:i}));e.lastSample=t;let s=!1;if(e.currentChunk){let i=t.presentationTimestamp-e.currentChunk.startTimestamp;if("fragmented"===r(this,Je).fastStart){let a=r(this,Ye)??r(this,Ze);const n=r(this,Je).minFragmentDuration??1;e===a&&"key"===t.type&&i>=n&&(s=!0,h(this,St,xt).call(this))}else s=i>=.5}else s=!0;s&&(e.currentChunk&&h(this,Ct,vt).call(this,e),e.currentChunk={startTimestamp:t.presentationTimestamp,samples:[]}),e.currentChunk.samples.push(t)},kt=new WeakSet,Tt=function(e,t,i){const s="strict"===r(this,Je).firstTimestampBehavior,a=-1===i.lastDecodeTimestamp;if(s&&a&&0!==t)throw new Error(`The first chunk for your media track must have a timestamp of 0 (received DTS=${t}).Non-zero first timestamps are often caused by directly piping frames or audio data from a MediaStreamTrack into the encoder. Their timestamps are typically relative to the age of thedocument, which is probably what you want.\n\nIf you want to offset all timestamps of a track such that the first one is zero, set firstTimestampBehavior: 'offset' in the options.\n`);if("offset"===r(this,Je).firstTimestampBehavior||"cross-track-offset"===r(this,Je).firstTimestampBehavior){let s;void 0===i.firstDecodeTimestamp&&(i.firstDecodeTimestamp=t),s="offset"===r(this,Je).firstTimestampBehavior?i.firstDecodeTimestamp:Math.min(r(this,Ye)?.firstDecodeTimestamp??1/0,r(this,Ze)?.firstDecodeTimestamp??1/0),t-=s,e-=s}if(t<i.lastDecodeTimestamp)throw new Error(`Timestamps must be monotonically increasing (DTS went from ${1e6*i.lastDecodeTimestamp} to ${1e6*t}).`);return i.lastDecodeTimestamp=t,{presentationTimestamp:e,decodeTimestamp:t}},Ct=new WeakSet,vt=function(e){if("fragmented"===r(this,Je).fastStart)throw new Error("Can't finalize individual chunks if 'fastStart' is set to 'fragmented'.");if(e.currentChunk)if(e.finalizedChunks.push(e.currentChunk),r(this,tt).push(e.currentChunk),0!==e.compactlyCodedChunkTable.length&&M(e.compactlyCodedChunkTable).samplesPerChunk===e.currentChunk.samples.length||e.compactlyCodedChunkTable.push({firstChunk:e.finalizedChunks.length,samplesPerChunk:e.currentChunk.samples.length}),"in-memory"!==r(this,Je).fastStart){e.currentChunk.offset=r(this,Ke).pos;for(let t of e.currentChunk.samples)r(this,Ke).write(t.data),t.data=null;h(this,zt,Et).call(this)}else e.currentChunk.offset=0},St=new WeakSet,xt=function(e=!0){if("fragmented"!==r(this,Je).fastStart)throw new Error("Can't finalize a fragment unless 'fastStart' is set to 'fragmented'.");let t=[r(this,Ye),r(this,Ze)].filter(e=>e&&e.currentChunk);if(0===t.length)return;let i=(s=this,a=it,{set _(e){o(s,a,e,n)},get _(){return r(s,a,l)}})._++;var s,a,n,l;if(1===i){let e=F(t,r(this,et),!0);r(this,Ke).writeBox(e)}let d=r(this,Ke).pos,f=ce(i,t);r(this,Ke).writeBox(f);{let e=V(!1),i=0;for(let e of t)for(let t of e.currentChunk.samples)i+=t.size;let s=r(this,Ke).measureBox(e)+i;s>=2**32&&(e.largeSize=!0,s=r(this,Ke).measureBox(e)+i),e.size=s,r(this,Ke).writeBox(e)}for(let e of t){e.currentChunk.offset=r(this,Ke).pos,e.currentChunk.moofOffset=d;for(let t of e.currentChunk.samples)r(this,Ke).write(t.data),t.data=null}let u=r(this,Ke).pos;r(this,Ke).seek(r(this,Ke).offsets.get(f));let m=ce(i,t);r(this,Ke).writeBox(m),r(this,Ke).seek(u);for(let e of t)e.finalizedChunks.push(e.currentChunk),r(this,tt).push(e.currentChunk),e.currentChunk=null;e&&h(this,zt,Et).call(this)},zt=new WeakSet,Et=function(){r(this,Ke)instanceof Ge&&r(this,Ke).flush()},At=new WeakSet,Mt=function(){if(r(this,rt))throw new Error("Cannot add new video or audio chunks after the file has been finalized.")},Wt=l,((a,r,n,o)=>{if(r&&"object"==typeof r||"function"==typeof r)for(let h of i(r))s.call(a,h)||h===n||e(a,h,{get:()=>r[h],enumerable:!(o=t(r,h))||o.enumerable});return a})(e({},"__esModule",{value:!0}),Wt)})();"object"==typeof module&&"object"==typeof module.exports&&Object.assign(module.exports,Mp4Muxer);
+</script>
 <script>window.P3D_MODE='inmo';</script>
 <script src="app.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -427,7 +442,7 @@ function computeRooms(){RM=null;if(!st.walls.length)return;
   if(below.length){const rise=stairRise(st.cf-1),ctxs=[t2].concat(rtex.filter(Boolean).map(cv2=>cv2.getContext('2d')));
     below.forEach(s2=>stairGeo(s2,rise).foot.forEach(poly=>ctxs.forEach(cx=>{cx.save();cx.globalCompositeOperation='destination-out';cx.beginPath();
       poly.forEach((q,j)=>{const X=(q[0]-x0)*k,Y=(q[1]-y0)*k;j?cx.lineTo(X,Y):cx.moveTo(X,Y)});cx.closePath();cx.fill();cx.restore()})))}
-  RM={x0,y0,nx,ny,res,owner,info,ov,tex,rtex,out,inner:inner*res*res}}
+  RM={x0,y0,nx,ny,res,owner,info,ov,tex,rtex,out,wall,inner:inner*res*res}}
 function roomAt(p){if(!RM)return -1;const ix=Math.floor((p[0]-RM.x0)/RM.res),iy=Math.floor((p[1]-RM.y0)/RM.res);if(ix<0||iy<0||ix>=RM.nx||iy>=RM.ny)return -1;
   const o=RM.owner[iy*RM.nx+ix];return o>=0&&RM.info[o]&&RM.info[o].ok?o:-1}
 const lvAt=(x,y)=>{const r=roomAt([x,y]);return r>=0?(st.rooms[r].lv||0):0};
@@ -838,18 +853,107 @@ function renderMat(){const b=$('#matb');if(!b)return;if(!st.walls.length){b.inne
 let build=()=>{},recenter=()=>{},shot3D=null,startWalk=()=>{};
 const box3=$('#v3');
 if(window.THREE){
-  const T=THREE,ren=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});ren.setPixelRatio(Math.min(2,devicePixelRatio||1));ren.shadowMap.enabled=true;ren.shadowMap.type=T.PCFSoftShadowMap;
+  const T=THREE,ren=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});ren.shadowMap.enabled=true;ren.shadowMap.type=T.PCFSoftShadowMap;
+  ren.outputEncoding=T.sRGBEncoding;ren.toneMapping=T.ACESFilmicToneMapping;ren.toneMappingExposure=0.88;
+  /* ---------- calidad visual: niveles automáticos, color, luz, materiales y entorno ---------- */
+  const QLV=(()=>{let s='auto';try{s=localStorage.getItem('p3d-calidad')||'auto'}catch(e){}if(s!=='auto'&&s)return s;
+    const mem=navigator.deviceMemory||4,cores=navigator.hardwareConcurrency||4,small=Math.min(screen.width,screen.height)<520;
+    let l=mem>=6&&cores>=6?'alta':mem>=3&&cores>=4?'media':'liviana';if(small&&l==='alta'&&mem<8)l='media';return l})();
+  const QP={liviana:{pr:1,sh:1024,tx:256,trees:4},media:{pr:1.5,sh:2048,tx:512,trees:8},alta:{pr:2,sh:3072,tx:1024,trees:12}}[QLV]||{pr:1.5,sh:2048,tx:512,trees:8};
+  window.__p3dCalidad=QLV;
+  const lin=c=>{const k=(c instanceof T.Color)?c.clone():new T.Color(c);return k.convertSRGBToLinear()};
+  const MSM=(o={})=>{o=Object.assign({},o);if(o.color!=null)o.color=lin(o.color);if(o.emissive!=null)o.emissive=lin(o.emissive);if(o.map)o.map.encoding=T.sRGBEncoding;return new T.MeshStandardMaterial(o)};
+  // ruido periódico (las texturas se repiten sin costuras)
+  const NP=(()=>{const P=new Uint8Array(512);let s=7;const rnd=()=>(s=(s*16807)%2147483647)/2147483647;const p=[...Array(256).keys()];
+    for(let i=255;i>0;i--){const j=Math.floor(rnd()*(i+1));const t=p[i];p[i]=p[j];p[j]=t}for(let i=0;i<512;i++)P[i]=p[i&255];return P})();
+  const hv=(x,y)=>NP[(NP[x&255]+(y&255))&511]/255;
+  function vnoise(x,y,px,py){const xi=Math.floor(x),yi=Math.floor(y),xf=x-xi,yf=y-yi,u=xf*xf*(3-2*xf),v=yf*yf*(3-2*yf),mx=a=>((a%px)+px)%px,my=a=>((a%py)+py)%py;
+    const a=hv(mx(xi),my(yi)),b=hv(mx(xi+1),my(yi)),c=hv(mx(xi),my(yi+1)),d=hv(mx(xi+1),my(yi+1));return a+(b-a)*u+(c-a)*v+(a-b-c+d)*u*v}
+  function fbm(u,v,px,py,oct){let s=0,a=0.5,f=1,t=0;for(let o=0;o<oct;o++){s+=a*vnoise(u*px*f,v*py*f,px*f,py*f);t+=a;a*=0.5;f*=2}return s/t}
+  const hash2=(a,b)=>{const h=Math.sin(a*127.1+b*311.7)*43758.5453;return h-Math.floor(h)};
+  const TXC={};
+  // cada textura: color, relieve (para el mapa de normales), tamaño real en metros y rugosidad
+  const TXDEF={
+    porcelanato:{rep:1.2,rough:0.32,nrm:2.2,f:(u,v)=>{const U=u*2,V=v*2,tx=Math.floor(U),ty=Math.floor(V),fu=U-tx,fv=V-ty,g=0.004;
+      if(fu<g||fu>1-g||fv<g||fv>1-g)return[150,144,132,0];const n=fbm(u,v,6,6,4),r=1-Math.abs(2*fbm(u+0.3,v+0.7,3,3,5)-1),vein=Math.pow(r,14)*34,tone=((tx*7+ty*13)%4)*2.5;
+      const b=224-tone+(n-0.5)*12-vein;return[b,b-3,b-12,1]}},
+    ceramico:{rep:0.99,rough:0.55,nrm:2.5,f:(u,v)=>{const U=u*3,V=v*3,tx=Math.floor(U),ty=Math.floor(V),fu=U-tx,fv=V-ty,g=0.014;
+      if(fu<g||fu>1-g||fv<g||fv>1-g)return[132,118,98,0];const n=fbm(u,v,9,9,3),sp=hash2(Math.floor(u*400),Math.floor(v*400))>0.93?-14:0,t=(hash2(tx,ty)-0.5)*16,e=Math.min(fu,1-fu,fv,1-fv)<0.04?-6:0;
+      return[200+t+(n-0.5)*14+sp+e,180+t+(n-0.5)*12+sp+e,152+t+(n-0.5)*10+sp+e,0.9+(n-0.5)*0.05]}},
+    madera:{rep:1.2,rough:0.55,nrm:2.4,f:(u,v)=>{const row=Math.floor(v*6),fv=v*6-row,off=((row*0.37)%1),pu=((u+off)%1),pl=Math.floor(pu*1),fu=pu-pl;
+      if(fv<0.02||fv>0.98||fu<0.004)return[70,48,30,0];const id=hash2(row,Math.floor((u+off)))*1,hue=(id-0.5)*26,grain=fbm(u+off,v,4,48,4),ring=Math.sin((grain*9+v*30)*3.14159)*0.5+0.5;
+      return[150+hue-ring*26,104+hue*0.7-ring*20,66+hue*0.45-ring*14,0.85+ring*0.08]}},
+    cemento:{rep:2,rough:0.7,nrm:1.2,f:(u,v)=>{const n=fbm(u,v,4,4,5),m=fbm(u+0.5,v+0.2,16,16,3);const b=150+(n-0.5)*34+(m-0.5)*10;return[b,b-1,b-5,n*0.3+m*0.2]}},
+    alfombra:{rep:0.6,rough:1,nrm:1.6,f:(u,v)=>{const n=fbm(u,v,60,60,2),m=fbm(u,v,6,6,3);const b=(n-0.5)*26+(m-0.5)*10;return[112+b,100+b,122+b,n]}},
+    revoque:{rep:1.5,rough:0.95,nrm:1.0,f:(u,v)=>{const n=fbm(u,v,24,24,4),m=fbm(u,v,4,4,3);const b=244+(n-0.5)*14+(m-0.5)*6;return[b,b-1,b-3,n]}},
+    ladrillo:{rep:0.5,rough:0.85,nrm:3,f:(u,v)=>{const row=Math.floor(v*6),fv=v*6-row,off=row%2?0.25:0,uu=((u+off)%1)*2,col=Math.floor(uu),fu=uu-col,jh=0.12,jw=0.04;
+      if(fv<jh||fu<jw)return[196,186,168,0];const t=(hash2(row,col)-0.5)*40,n=fbm(u,v,24,24,3);return[168+t+(n-0.5)*20,80+t*0.5+(n-0.5)*12,48+t*0.3+(n-0.5)*8,0.85+n*0.15]}},
+    teja:{rep:1,rough:0.75,nrm:4,f:(u,v)=>{const row=Math.floor(v*4),fv=v*4-row,uu=(u*5+(row%2?0.5:0))%1,prof=Math.sin(uu*Math.PI),sh=fv>0.9?0.55:1,n=fbm(u,v,10,10,3),t=(hash2(row,Math.floor(u*5+(row%2?0.5:0)))-0.5)*24;
+      return[(150+prof*50+t+(n-0.5)*14)*sh,(68+prof*28+t*0.5)*sh,(40+prof*16)*sh,prof*0.8+(fv>0.9?-0.3:0)]}},
+    chapa:{rep:0.76,rough:0.38,nrm:6,f:(u,v)=>{const w=Math.sin(u*10*Math.PI*2)*0.5+0.5,n=fbm(u,v,4,16,3),b=168+w*34+(n-0.5)*14;return[b-4,b,b+5,w]}},
+    losa:{rep:2,rough:0.8,nrm:1,f:(u,v)=>{const n=fbm(u,v,5,5,5);const b=186+(n-0.5)*26;return[b,b-2,b-6,n*0.4]}},
+    maderaTecho:{rep:1.2,rough:0.7,nrm:3,f:(u,v)=>{const row=Math.floor(v*8),fv=v*8-row;if(fv<0.04)return[60,40,24,0];const g=fbm(u,v,3,64,4),t=(hash2(row,1)-0.5)*24;return[132+t-g*30,92+t*0.7-g*22,58+t*0.4-g*14,1]}},
+    pasto:{rep:3,rough:1,nrm:1.4,f:(u,v)=>{const n=fbm(u,v,6,6,4),m=fbm(u,v,64,64,2),d=fbm(u+0.4,v+0.1,3,3,3);return[64+(n-0.5)*30+(m-0.5)*26+(d-0.5)*30,112+(n-0.5)*34+(m-0.5)*30,48+(m-0.5)*18,m]}},
+    vereda:{rep:0.8,rough:0.85,nrm:2.5,f:(u,v)=>{const U=u*2,V=v*2,fu=U-Math.floor(U),fv=V-Math.floor(V);if(fu<0.02||fv<0.02)return[120,116,110,0];const n=fbm(u,v,12,12,4),t=(hash2(Math.floor(U),Math.floor(V))-0.5)*10;const b=190+t+(n-0.5)*20;return[b,b-3,b-9,0.9+n*0.1]}},
+    tela:{rep:0.25,rough:1,nrm:1.2,f:(u,v)=>{const w=(Math.sin(u*40*Math.PI*2)*Math.sin(v*40*Math.PI*2))*0.5+0.5,n=fbm(u,v,8,8,2);const b=232+(w-0.5)*14+(n-0.5)*10;return[b,b,b,w]}},
+    maderaMueble:{rep:0.6,rough:0.5,nrm:1.4,f:(u,v)=>{const g=fbm(u,v,3,40,4),r=Math.sin((g*8+u*6)*Math.PI)*0.5+0.5;return[176-r*30,130-r*24,88-r*18,r]}},
+    granito:{rep:0.6,rough:0.25,nrm:0.6,f:(u,v)=>{const s=hash2(Math.floor(u*300),Math.floor(v*300)),n=fbm(u,v,20,20,3);const b=46+(n-0.5)*16+(s>0.9?70:s>0.8?28:0);return[b,b-2,b-3,n]}}};
+  function genTex(name){if(TXC[name])return TXC[name];const D=TXDEF[name]||TXDEF.revoque,S=QP.tx,cv=document.createElement('canvas');cv.width=cv.height=S;
+    const cx=cv.getContext('2d'),im=cx.createImageData(S,S),d=im.data,hg=new Float32Array(S*S);
+    for(let y=0;y<S;y++)for(let x=0;x<S;x++){const r=D.f((x+0.5)/S,(y+0.5)/S),i=y*S+x;d[i*4]=r[0];d[i*4+1]=r[1];d[i*4+2]=r[2];d[i*4+3]=255;hg[i]=r[3]}
+    cx.putImageData(im,0,0);
+    const nc=document.createElement('canvas');nc.width=nc.height=S;const nx2=nc.getContext('2d'),ni=nx2.createImageData(S,S),nd=ni.data,k=D.nrm*S/256;
+    for(let y=0;y<S;y++)for(let x=0;x<S;x++){const l=hg[y*S+(x-1+S)%S],r=hg[y*S+(x+1)%S],up=hg[((y-1+S)%S)*S+x],dn=hg[((y+1)%S)*S+x],a=(l-r)*k*0.5,b=(dn-up)*k*0.5,L=Math.hypot(a,b,1),i=(y*S+x)*4;
+      nd[i]=(a/L*0.5+0.5)*255;nd[i+1]=(b/L*0.5+0.5)*255;nd[i+2]=(1/L*0.5+0.5)*255;nd[i+3]=255}
+    nx2.putImageData(ni,0,0);
+    const mk=c=>{const t=new T.CanvasTexture(c);t.wrapS=t.wrapT=T.RepeatWrapping;t.anisotropy=Math.min(8,ren.capabilities.getMaxAnisotropy());t.repeat.set(1/D.rep,1/D.rep);return t};
+    const map=mk(cv);map.encoding=T.sRGBEncoding;return TXC[name]={map,normal:mk(nc),rep:D.rep,rough:D.rough}}
+  // material con textura en metros: la geometría trae las coordenadas en metros
+  const matCache={};
+  function texMat(name,o={}){const key=name+'|'+JSON.stringify(o);if(matCache[key])return matCache[key];const t=genTex(name);
+    return matCache[key]=MSM(Object.assign({map:t.map,normalMap:t.normal,normalScale:new T.Vector2(0.6,0.6),roughness:t.rough},o))}
+  // coordenadas de textura en metros para una caja
+  function boxM(w,h,d){const g=new T.BoxGeometry(w,h,d),uv=g.attributes.uv,dims=[[d,h],[d,h],[w,d],[w,d],[w,h],[w,h]];
+    for(let f=0;f<6;f++)for(let j=0;j<4;j++){const i=f*4+j;uv.setXY(i,uv.getX(i)*dims[f][0],uv.getY(i)*dims[f][1])}uv.needsUpdate=true;return g}
+  // cielo, niebla y reflejos
+  const skyCv=document.createElement('canvas');skyCv.width=4;skyCv.height=256;{const x=skyCv.getContext('2d'),g=x.createLinearGradient(0,0,0,256);
+    g.addColorStop(0,'#6E9BCB');g.addColorStop(0.55,'#B9D0E4');g.addColorStop(1,'#E6ECEF');x.fillStyle=g;x.fillRect(0,0,4,256)}
+  const skyTex=new T.CanvasTexture(skyCv);skyTex.encoding=T.sRGBEncoding;
+  function makeEnv(){const es=new T.Scene(),geo=new T.SphereGeometry(50,32,16),cols=[],pos=geo.attributes.position,c=new T.Color();
+    for(let i=0;i<pos.count;i++){const y=pos.getY(i)/50;if(y>0)c.setRGB(0.45+0.4*(1-y),0.62+0.3*(1-y),0.85+0.1*(1-y));else c.setRGB(0.42,0.40,0.36);cols.push(c.r,c.g,c.b)}
+    geo.setAttribute('color',new T.Float32BufferAttribute(cols,3));es.add(new T.Mesh(geo,new T.MeshBasicMaterial({vertexColors:true,side:T.BackSide})));
+    const sunD=new T.Mesh(new T.SphereGeometry(4,16,8),new T.MeshBasicMaterial({color:0xffffff}));sunD.position.set(-20,30,15);sunD.material.color.multiplyScalar(6);es.add(sunD);
+    const pm=new T.PMREMGenerator(ren),rt=pm.fromScene(es,0.04);pm.dispose();return rt.texture}
+
+  ren.setPixelRatio(Math.min(QP.pr,devicePixelRatio||1));
   box3.appendChild(ren.domElement);
-  const scene=new T.Scene();scene.background=new T.Color(0x0A0A0A);
-  const cam=new T.PerspectiveCamera(45,4/3,0.05,300);
-  scene.add(new T.HemisphereLight(0xfff6e0,0x1a1a1a,0.75));
-  const sun=new T.DirectionalLight(0xffffff,0.85);sun.position.set(-6,12,8);sun.castShadow=true;sun.shadow.mapSize.set(1536,1536);
-  Object.assign(sun.shadow.camera,{left:-14,right:14,top:14,bottom:-14});scene.add(sun);
-  const base=new T.Mesh(new T.PlaneGeometry(80,80),new T.MeshStandardMaterial({color:0x16181C,depthWrite:false}));base.renderOrder=-1;base.rotation.x=-Math.PI/2;base.position.y=-0.01;base.receiveShadow=true;scene.add(base);
+  const scene=new T.Scene();scene.background=skyTex;scene.fog=new T.Fog(lin(0xE6ECEF),45,160);
+  try{scene.environment=makeEnv()}catch(e){}
+  const cam=new T.PerspectiveCamera(45,4/3,0.05,400);
+  const hemi=new T.HemisphereLight(0xdce8f5,0x7d735f,0.28);scene.add(hemi);
+  const sun=new T.DirectionalLight(0xfff0db,2.4);sun.position.set(-8,14,7);sun.castShadow=true;sun.shadow.mapSize.set(QP.sh,QP.sh);sun.shadow.bias=-0.0003;sun.shadow.normalBias=0.025;sun.shadow.radius=3;
+  Object.assign(sun.shadow.camera,{left:-14,right:14,top:14,bottom:-14,near:0.5,far:80});scene.add(sun);scene.add(sun.target);
+  // entorno: pasto, vereda y árboles
+  const env=new T.Group();scene.add(env);
+  const gT=genTex('pasto');const gG=new T.PlaneGeometry(300,300);{const uv=gG.attributes.uv;for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)*300,uv.getY(i)*300)}
+  const base=new T.Mesh(gG,MSM({map:gT.map,normalMap:gT.normal,roughness:1,depthWrite:false}));base.renderOrder=-2;base.rotation.x=-Math.PI/2;base.position.y=-0.02;base.receiveShadow=true;scene.add(base);
+  const mTrunk=MSM({color:0x6B4A2F,roughness:0.9}),mLeaf=[0x5E8A3A,0x6E9A44,0x4E7A33].map(c=>MSM({color:c,roughness:0.85,flatShading:true}));
+  function buildEnv(){env.children.slice().forEach(c=>{env.remove(c);c.traverse(n=>{n.geometry&&n.geometry.dispose()})});const b=bbox();if(!b)return;
+    const W=b.x1-b.x0+2.4,D=b.y1-b.y0+2.4,vg=new T.PlaneGeometry(W,D);{const uv=vg.attributes.uv;for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)*W,uv.getY(i)*D)}
+    const ve=new T.Mesh(vg,texMat('vereda',{depthWrite:false}));ve.renderOrder=-1;ve.rotation.x=-Math.PI/2;ve.position.y=-0.012;ve.receiveShadow=true;env.add(ve);
+    const R0=Math.max(b.x1-b.x0,b.y1-b.y0)/2+4;let sd=3;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;
+    for(let i=0;i<QP.trees;i++){const a=(i/QP.trees)*Math.PI*2+rnd()*0.5,r=R0+rnd()*9,t=new T.Group(),hh=2.2+rnd()*2.2;t.position.set(Math.cos(a)*r,0,Math.sin(a)*r);
+      const tr=new T.Mesh(new T.CylinderGeometry(0.1,0.16,hh,7),mTrunk);tr.position.y=hh/2;tr.castShadow=true;t.add(tr);
+      for(let j=0;j<3;j++){const c=new T.Mesh(new T.IcosahedronGeometry(0.9+rnd()*0.7,1),mLeaf[(i+j)%3]);c.position.set((rnd()-0.5)*0.9,hh+0.2+j*0.45,(rnd()-0.5)*0.9);c.castShadow=true;t.add(c)}env.add(t)}
+    const ext=Math.max(b.x1-b.x0,b.y1-b.y0)/2+4;Object.assign(sun.shadow.camera,{left:-ext,right:ext,top:ext,bottom:-ext});sun.shadow.camera.updateProjectionMatrix()}
   const root=new T.Group();scene.add(root);let grp=root,wallTop=2.6,showAll=false;const RMs=[];
-  const wallMats={},mWallOf=h=>wallMats[h]||(wallMats[h]=new T.MeshStandardMaterial({color:new T.Color(h),roughness:0.9}));
-  const mGlass=new T.MeshStandardMaterial({color:0x22D3EE,transparent:true,opacity:0.28}),
-    mFloor=new T.MeshStandardMaterial({color:0x7A6247,roughness:0.8}),mDoor=new T.MeshStandardMaterial({color:0x9E7535}),mGold=new T.MeshStandardMaterial({color:0xD4AF37,metalness:0.5,roughness:0.4});
+  const wallMats={},mWallOf=h=>{if(wallMats[h])return wallMats[h];const m=texMat('revoque',{color:h,roughness:0.92});const m2=m.clone();m2.userData.wall=1;return wallMats[h]=m2};
+  const mZoc=MSM({color:0xF1EDE4,roughness:0.45});
+  const mGlass=MSM({color:0xBFD3DC,metalness:0,roughness:0.04,transparent:true,opacity:0.22,envMapIntensity:1.6,depthWrite:false}),
+    mFrame=MSM({color:0x3A3D41,metalness:0.55,roughness:0.35}),mSill=texMat('granito',{roughness:0.3}),
+    mFloor=texMat('cemento'),mDoor=texMat('maderaMueble',{roughness:0.55}),mGold=MSM({color:0xB58A4A,metalness:0.6,roughness:0.35}),mHandle=MSM({color:0xC9CCD1,metalness:0.9,roughness:0.2}),
+    mWhite=MSM({color:0xF4F2EC,roughness:0.35}),mCeramic=MSM({color:0xF7F7F5,roughness:0.12}),mDark=MSM({color:0x2A2A2C,roughness:0.6}),mSteelF=MSM({color:0xD5D8DC,metalness:0.7,roughness:0.28}),
+    mCeil=texMat('revoque',{color:0xF6F4EF,roughness:0.95});
   const rTex=[];let camY=1.6;
   let OFF=[6,4.5],th=0.7,ph=0.95,rad=15,floorTex=null,walk=null,joyV=[0,0];const keys={};
   const P3=(x,y)=>[x-OFF[0],y-OFF[1]];
@@ -859,23 +963,90 @@ if(window.THREE){
     for(let k=1;k<g.p.length;k++){const lo=Math.max(u0,g.c[k-1]),hi=Math.min(u1,g.c[k]);if(hi-lo<0.002)continue;
       const p0=g.p[k-1],p1=g.p[k],sl=g.c[k]-g.c[k-1],t0=(lo-g.c[k-1])/sl,t1=(hi-g.c[k-1])/sl;
       const x=p0[0]+(p1[0]-p0[0])*(t0+t1)/2,y=p0[1]+(p1[1]-p0[1])*(t0+t1)/2,[X,Z]=P3(x,y);
-      mesh(new T.BoxGeometry(hi-lo+(g.curved?0.03:0),y1-y0,thk),mat,X,(y0+y1)/2,Z,-Math.atan2(p1[1]-p0[1],p1[0]-p0[0]))}}
+      const L=hi-lo+(g.curved?0.03:0),ry=-Math.atan2(p1[1]-p0[1],p1[0]-p0[0]);mesh(boxM(L,y1-y0,thk),mat,X,(y0+y1)/2,Z,ry);
+      if(mat.userData&&mat.userData.wall&&y0<=0.001&&y1>0.3){const zb=mesh(boxM(L,0.08,thk+0.018),mZoc,X,Math.max(y0,0)+0.04,Z,ry);zb.castShadow=false}}}
   build=()=>{roofParts.length=0;root.children.slice().forEach(c=>{root.remove(c);c.traverse(n=>{n.geometry&&n.geometry.dispose()})});
     rTex.forEach(t=>t.dispose());rTex.length=0;RMs.length=0;
+    try{buildEnv()}catch(e){}
     if(!st.fls){buildFloor(0,false);return}
     const cf0=st.cf;st.fls.forEach((F,i)=>withFloor(i,()=>{RMs[i]=RM;if(!(showAll||walk||i<=cf0))return;const g2=new T.Group();g2.position.y=zOf(i);root.add(g2);grp=g2;
       wallTop=WHf()+(i<st.fls.length-1?SLAB():0);try{buildFloor(i,i>0)}finally{grp=root}}))};
+  // pisos: un plano por ambiente con su material real; la máscara y la sombra junto a las paredes van en el canal de oclusión
+  const FTX={porcelanato:'porcelanato',ceramico:'ceramico',madera:'madera',cemento:'cemento',alfombra:'alfombra'};
+  function maskMat(name,o){const m=texMat(name,o).clone();m.aoMapIntensity=1;
+    m.onBeforeCompile=sh=>{sh.fragmentShader=sh.fragmentShader.replace('void main() {','void main() {\n#ifdef USE_AOMAP\nif(texture2D(aoMap,vUv2).a<0.5)discard;\n#endif')};m.customProgramCacheKey=()=>'mask';return m}
+  function floorMeshes(R,hasBelow){const{nx,ny,res,x0,y0,owner,info,out,wall}=R,N=nx*ny,W=nx*res,H=ny*res;
+    // distancia aproximada a la pared más cercana (en celdas) para oscurecer rincones y bordes
+    const dist=new Float32Array(N).fill(1e9);for(let k=0;k<N;k++)if(wall&&wall[k])dist[k]=0;
+    for(let y=0;y<ny;y++)for(let x=0;x<nx;x++){const k=y*nx+x;if(x)dist[k]=Math.min(dist[k],dist[k-1]+1);if(y)dist[k]=Math.min(dist[k],dist[k-nx]+1)}
+    for(let y=ny-1;y>=0;y--)for(let x=nx-1;x>=0;x--){const k=y*nx+x;if(x<nx-1)dist[k]=Math.min(dist[k],dist[k+1]+1);if(y<ny-1)dist[k]=Math.min(dist[k],dist[k+nx]+1)}
+    const aoR=0.45/res;
+    const below=st.fls&&st.fls[st.cf-1]?(st.fls[st.cf-1].stairs||[]):[],holes=[];if(below.length){const rise=stairRise(st.cf-1);below.forEach(s2=>stairGeo(s2,rise).foot.forEach(poly=>holes.push(poly)))}
+    const sc=2,mkMask=sel=>{const c=document.createElement('canvas');c.width=nx;c.height=ny;const x=c.getContext('2d'),im=x.createImageData(nx,ny),d=im.data;let any=false;
+        for(let k=0;k<N;k++){if(!sel(k))continue;any=true;const t=Math.min(1,dist[k]/aoR),ao=0.62+0.38*(t*t*(3-2*t));d[k*4]=d[k*4+1]=d[k*4+2]=ao*255;d[k*4+3]=255}
+        if(!any)return null;x.putImageData(im,0,0);const c2=document.createElement('canvas');c2.width=nx*sc;c2.height=ny*sc;const x2=c2.getContext('2d');x2.imageSmoothingEnabled=true;x2.drawImage(c,0,0,nx*sc,ny*sc);
+        holes.forEach(poly=>{x2.save();x2.globalCompositeOperation='destination-out';x2.beginPath();poly.forEach((q,j)=>{const X=(q[0]-x0)/res*sc,Y=(q[1]-y0)/res*sc;j?x2.lineTo(X,Y):x2.moveTo(X,Y)});x2.closePath();x2.fill();x2.restore()});
+        const t=new T.CanvasTexture(c2);t.flipY=true;rTex.push(t);return t};
+    const plane=(ao,mat,y,flip)=>{const g=new T.PlaneGeometry(W,H),uv=g.attributes.uv;g.setAttribute('uv2',new T.Float32BufferAttribute(Array.from(uv.array),2));
+        for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)*W,uv.getY(i)*H);const m=mat;const f=new T.Mesh(g,m);f.onBeforeRender=()=>{};
+        f.material=m.clone();f.material.aoMap=ao;f.material.onBeforeCompile=m.onBeforeCompile;f.material.customProgramCacheKey=m.customProgramCacheKey;
+        f.rotation.x=flip?Math.PI/2:-Math.PI/2;if(flip)f.scale.y=-1;const c=P3(x0+W/2,y0+H/2);f.position.set(c[0],y,c[1]);f.receiveShadow=true;grp.add(f);return f};
+    const okRoom=k=>owner[k]>=0&&info[owner[k]]&&info[owner[k]].ok;
+    st.rooms.forEach((r,i)=>{if(!info[i]||!info[i].ok)return;const ao=mkMask(k=>owner[k]===i||(wall&&wall[k]&&dist[k]===0&&near(k,i)));if(!ao)return;
+      plane(ao,maskMat(FTX[r.f]||'porcelanato'),(r.lv||0)+0.006)});
+    function near(k,i){const x=k%nx;return(x>0&&owner[k-1]===i)||(x<nx-1&&owner[k+1]===i)||(k>=nx&&owner[k-nx]===i)||(k<N-nx&&owner[k+nx]===i)}
+    const rest=mkMask(k=>!out[k]&&!okRoom(k));if(rest)plane(rest,maskMat('cemento'),0.004);
+    if(hasBelow){const all=mkMask(k=>!out[k]);if(all)plane(all,maskMat('revoque',{color:0xF6F4EF,roughness:0.95}),-SLAB()+0.004,true)}}
+  // marcos, vidrios y alféizar de las aberturas
+  function opGroup(g,q){const m=at(g,(q.s+q.e)/2),[X,Z]=P3(m.x,m.y),gr=new T.Group();gr.position.set(X,0,Z);gr.rotation.y=-Math.atan2(m.uy,m.ux);grp.add(gr);
+    const add=(w,h,d,x,y,z,mt,cs)=>{const b=new T.Mesh(boxM(w,h,d),mt);b.position.set(x,y,z);b.castShadow=cs!==false;b.receiveShadow=true;gr.add(b);return b};return{gr,add,L:q.e-q.s}}
+  function winMesh(g,q){const{add,L}=opGroup(g,q),f=0.05,hh=q.h-q.b,y0=q.b,yc=y0+hh/2;
+    add(L,f,0.07,0,q.h-f/2,0,mFrame);add(L,f,0.07,0,y0+f/2,0,mFrame);add(f,hh,0.07,-L/2+f/2,yc,0,mFrame);add(f,hh,0.07,L/2-f/2,yc,0,mFrame);
+    const n=L>1.1?2:1;for(let i=1;i<n;i++)add(0.04,hh-2*f,0.06,-L/2+L*i/n,yc,0.012,mFrame);
+    for(let i=0;i<n;i++){const gw=L/n-0.06;const gl=add(gw,hh-2*f,0.008,-L/2+L*(i+0.5)/n,yc,i%2?-0.01:0.01,mGlass,false);gl.receiveShadow=false;gl.renderOrder=2}
+    if(y0>0.1)add(L+0.08,0.03,TH+0.08,0,y0-0.015,0,mSill)}
+  function doorFrame(g,q){const{add,L}=opGroup(g,q),f=0.07,d=TH+0.03;add(f,q.h,d,-L/2+f/2,q.h/2,0,mWhite);add(f,q.h,d,L/2-f/2,q.h/2,0,mWhite);add(L,f,d,0,q.h-f/2,0,mWhite)}
+  // muebles armados por partes: se adaptan a las medidas que se cambien
+  const fabM={},fab=col=>fabM[col]||(fabM[col]=texMat('tela',{color:col,roughness:0.95}));
+  const mWoodF=texMat('maderaMueble',{roughness:0.5}),mWoodD=texMat('maderaMueble',{color:0x8a6a4c,roughness:0.5}),mGran=texMat('granito',{roughness:0.22}),
+    mPot=MSM({color:0xA85F3A,roughness:0.8}),mGreen=[0x4F7F3A,0x5F9142,0x3E6B2E].map(cc=>MSM({color:cc,roughness:0.8,flatShading:true})),mMattress=texMat('tela',{color:0xF7F5EF,roughness:0.95}),
+    mShower=MSM({color:0xCFE3E8,metalness:0,roughness:0.05,transparent:true,opacity:0.25,depthWrite:false});
+  function furn(k,c,gr){const B=(w,h,d,x,y,z,m,rx)=>{const b=new T.Mesh(boxM(w,h,d),m);b.position.set(x,y,z);if(rx)b.rotation.x=rx;b.castShadow=b.receiveShadow=true;gr.add(b);return b},
+      Cy=(r1,r2,h,x,y,z,m,seg)=>{const b=new T.Mesh(new T.CylinderGeometry(r1,r2,h,seg||20),m);b.position.set(x,y,z);b.castShadow=b.receiveShadow=true;gr.add(b);return b},
+      Sp=(sx,sy,sz,x,y,z,m)=>{const b=new T.Mesh(new T.SphereGeometry(0.5,20,12),m);b.scale.set(sx,sy,sz);b.position.set(x,y,z);b.castShadow=b.receiveShadow=true;gr.add(b);return b},
+      W=c.w,D=c.d,Hh=c.h,legs=(h,ins,m,r)=>[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>Cy(r||0.02,r||0.02,h,a*(W/2-ins),h/2,b*(D/2-ins),m,10));
+    if(k==='cama'){const fh=0.28,mh=0.22;legs(0.08,0.06,mDark,0.025);B(W,fh-0.08,D,0,0.08+(fh-0.08)/2,0,mWoodD);B(W-0.04,mh,D-0.06,0,fh+mh/2,0.02,mMattress);
+      B(W+0.06,1.05,0.07,0,0.525,-D/2-0.01,fab(c.c||0xE8DFC8));
+      const n=W>=1.2?2:1;for(let i=0;i<n;i++)Sp((W-0.12)/n-0.06,0.13,0.36,-W/2+0.06+(W-0.12)*(i+0.5)/n,fh+mh+0.06,-D/2+0.28,mMattress);
+      const bl=fab(0x8E9AA6);B(W+0.03,0.04,D*0.62,0,fh+mh+0.01,D/2-D*0.31+0.01,bl);B(0.015,0.28,D*0.62,-W/2-0.012,fh+mh-0.12,D/2-D*0.31+0.01,bl);B(0.015,0.28,D*0.62,W/2+0.012,fh+mh-0.12,D/2-D*0.31+0.01,bl);B(W+0.03,0.28,0.015,0,fh+mh-0.12,D/2+0.013,bl);return}
+    if(k==='sofa'){const col=fab(c.c||0x9E7535),sh=0.42,arm=0.16;legs(0.08,0.07,mDark,0.025);B(W,0.16,D,0,0.16,0,col);
+      const n=Math.max(2,Math.round((W-2*arm)/0.75));for(let i=0;i<n;i++){const cw=(W-2*arm)/n;B(cw-0.02,0.16,D-0.24,-W/2+arm+cw*(i+0.5),sh-0.04,0.09,col);B(cw-0.03,0.42,0.18,-W/2+arm+cw*(i+0.5),sh+0.17,-D/2+0.2,col,-0.12)}
+      B(W,0.5,0.14,0,0.4,-D/2+0.07,col);B(arm,0.36,D,-W/2+arm/2,0.42,0,col);B(arm,0.36,D,W/2-arm/2,0.42,0,col);return}
+    if(k==='mesa'){B(W,0.04,D,0,Hh-0.02,0,mWoodF);B(W-0.12,0.08,D-0.12,0,Hh-0.08,0,mWoodD);legs(Hh-0.04,0.07,mWoodD,0.03);return}
+    if(k==='silla'){const sh=0.46;legs(sh,0.04,mWoodD,0.018);B(W,0.04,D,0,sh+0.02,0,mWoodF);B(0.03,Hh-sh,0.03,-W/2+0.03,sh+(Hh-sh)/2,-D/2+0.03,mWoodD);B(0.03,Hh-sh,0.03,W/2-0.03,sh+(Hh-sh)/2,-D/2+0.03,mWoodD);
+      B(W-0.03,0.14,0.025,0,Hh-0.08,-D/2+0.03,mWoodF);B(W-0.06,0.03,0.02,0,sh+0.2,-D/2+0.03,mWoodD);return}
+    if(k==='placard'){const n=Math.max(2,Math.round(W/0.5));B(W,Hh,D,0,Hh/2,0,mWoodF);B(W,0.08,D-0.04,0,0.04,0.02,mDark);
+      for(let i=1;i<n;i++)B(0.006,Hh-0.12,0.004,-W/2+W*i/n,Hh/2+0.04,D/2+0.002,mDark);
+      for(let i=0;i<n;i++){const cx=-W/2+W*(i+0.5)/n+(i%2?-1:1)*(W/n/2-0.06);B(0.015,0.3,0.02,cx,1.05,D/2+0.015,mHandle)}return}
+    if(k==='mesada'){const ct=0.04,bh=Hh-ct,n=Math.max(1,Math.round(W/0.6));B(W-0.02,bh-0.1,D-0.04,0,0.1+(bh-0.1)/2,-0.01,mWhite);B(W-0.02,0.1,D-0.1,0,0.05,-0.04,mDark);
+      for(let i=1;i<n;i++)B(0.004,bh-0.14,0.004,-W/2+W*i/n,0.12+(bh-0.14)/2,D/2-0.028,mDark);for(let i=0;i<n;i++)B(0.12,0.012,0.02,-W/2+W*(i+0.5)/n,bh-0.06,D/2-0.02,mHandle);
+      B(W,ct,D+0.02,0,bh+ct/2,0.01,mGran);const sx=W>1.2?W*0.22:0;B(Math.min(0.5,W*0.4),0.012,0.36,sx,Hh+0.002,0.02,mSteelF);B(Math.min(0.46,W*0.36),0.013,0.32,sx,Hh+0.004,0.02,mDark);
+      Cy(0.015,0.015,0.28,sx,Hh+0.14,-D/2+0.1,mHandle,10);B(0.025,0.025,0.2,sx,Hh+0.27,-D/2+0.19,mHandle);return}
+    if(k==='heladera'){B(W,Hh-0.06,D,0,(Hh-0.06)/2+0.06,0,mSteelF);B(W-0.04,0.06,D-0.06,0,0.03,-0.02,mDark);B(W,0.006,0.006,0,Hh*0.7,D/2+0.003,mDark);
+      B(0.025,0.35,0.035,-W/2+0.06,Hh*0.7+0.25,D/2+0.02,mHandle);B(0.025,0.5,0.035,-W/2+0.06,Hh*0.7-0.35,D/2+0.02,mHandle);return}
+    if(k==='inodoro'){Cy(0.13,0.16,0.38,0,0.19,0.05,mCeramic,24);const bowl=Cy(0.19,0.15,0.08,0,0.4,0.06,mCeramic,24);bowl.scale.z=1.25;
+      const seat=new T.Mesh(new T.TorusGeometry(0.15,0.03,10,24),mWhite);seat.rotation.x=-Math.PI/2;seat.scale.y=1.25;seat.position.set(0,0.445,0.06);seat.castShadow=true;gr.add(seat);
+      B(W*0.95,0.38,0.17,0,0.62,-D/2+0.09,mCeramic);B(W*0.97,0.03,0.19,0,0.82,-D/2+0.09,mCeramic);return}
+    if(k==='ducha'){B(W,0.05,D,0,0.025,0,mCeramic);B(W-0.1,0.01,D-0.1,0,0.051,0,MSM({color:0xE4E9EA,roughness:0.3}));const gh=2.0;
+      B(0.008,gh,D,W/2-0.004,0.05+gh/2,0,mShower).renderOrder=2;B(W*0.6,gh,0.008,W*0.2,0.05+gh/2,D/2-0.004,mShower).renderOrder=2;B(0.02,gh,0.02,W/2-0.01,0.05+gh/2,D/2-0.01,mHandle);
+      Cy(0.012,0.012,0.7,-W/2+0.05,1.65,-D/2+0.05,mHandle,8);Cy(0.1,0.1,0.015,-W/2+0.15,2.0,-D/2+0.15,mHandle,20);return}
+    if(k==='planta'){Cy(0.17,0.13,0.36,0,0.18,0,mPot,18);Cy(0.16,0.16,0.02,0,0.355,0,mDark,18);
+      for(let i=0;i<7;i++){const a=i*2.4,r=i?0.14:0,s=new T.Mesh(new T.IcosahedronGeometry(0.16+((i*37)%5)*0.025,0),mGreen[i%3]);s.position.set(Math.cos(a)*r,0.55+i*0.08+(i%2)*0.05,Math.sin(a)*r);s.castShadow=true;gr.add(s)}return}
+    B(W,Hh,D,0,Hh/2,0,MSM({color:c.c,roughness:0.7}))}
   function buildFloor(fi,hasBelow){
     const b=bbox();
-    if(RM&&RM.inner>0.5){const floorTex=new T.CanvasTexture(RM.tex);rTex.push(floorTex);floorTex.anisotropy=4;const W=RM.nx*RM.res,H=RM.ny*RM.res;
-      const f=new T.Mesh(new T.PlaneGeometry(W,H),new T.MeshStandardMaterial({map:floorTex,roughness:0.85,transparent:true,alphaTest:0.5}));f.rotation.x=-Math.PI/2;const c=P3(RM.x0+W/2,RM.y0+H/2);f.position.set(c[0],0.005,c[1]);f.receiveShadow=true;grp.add(f);
-      if(hasBelow){// cara de abajo de la losa, con el mismo recorte (huecos de escalera incluidos)
-        const u=new T.Mesh(new T.PlaneGeometry(W,H),new T.MeshStandardMaterial({map:floorTex,color:0x9a958a,transparent:true,alphaTest:0.5}));u.rotation.x=Math.PI/2;u.scale.y=-1;u.position.set(c[0],-SLAB()+0.004,c[1]);grp.add(u)}}
-    if(RM&&RM.rtex)RM.rtex.forEach((cv2,i)=>{if(!cv2)return;const t=new T.CanvasTexture(cv2);t.anisotropy=4;rTex.push(t);const W=RM.nx*RM.res,H=RM.ny*RM.res,lv=st.rooms[i].lv||0;
-      const f=new T.Mesh(new T.PlaneGeometry(W,H),new T.MeshStandardMaterial({map:t,roughness:0.85,transparent:true,alphaTest:0.5}));f.rotation.x=-Math.PI/2;const c=P3(RM.x0+W/2,RM.y0+H/2);f.position.set(c[0],lv+0.005,c[1]);f.receiveShadow=true;grp.add(f);
-      if(lv>0){// relleno bajo el piso elevado, para que no quede hueco visto desde los escalones
-        const m=new T.Mesh(new T.PlaneGeometry(W,H),new T.MeshStandardMaterial({map:t,color:0x777777,transparent:true,alphaTest:0.5}));m.rotation.x=-Math.PI/2;m.position.set(c[0],0.004,c[1]);grp.add(m)}});
-    stepsList().forEach(q=>{const ang=Math.atan2(q.m.uy,q.m.ux),mS=new T.MeshStandardMaterial({color:0xBDB6A6,roughness:0.8}),base=TH/2;
+    if(RM&&RM.inner>0.5)floorMeshes(RM,hasBelow);
+    stepsList().forEach(q=>{const ang=Math.atan2(q.m.uy,q.m.ux),mS=MSM({color:0xBDB6A6,roughness:0.8}),base=TH/2;
       // umbral dentro del muro, al nivel alto
       {const [X,Z]=P3(q.m.x,q.m.y);mesh(new T.BoxGeometry(q.w,Math.max(0.02,q.hi-q.lo),TH+0.02),mS,X,(q.hi+q.lo)/2,Z,-ang)}
       for(let k=1;k<q.n;k++){const top=q.hi-k*q.rise,d=base+(k-0.5)*0.28,[X,Z]=P3(q.m.x+q.nx*d,q.m.y+q.ny*d);
@@ -891,32 +1062,27 @@ if(window.THREE){
           if(d(q.A)>TH*0.7||d(q.B)>TH*0.7)return;const s=Math.max(0,Math.min(t(q.A),t(q.B))),e=Math.min(g.L,Math.max(t(q.A),t(q.B)));if(e-s>0.05)iv.push({o:null,s,e,b:q.b,h:q.h})})}
       iv.sort((a,c)=>a.s-c.s).forEach(q=>{const s0=Math.max(q.s,cur);
         if(q.s>cur)emit(g,cur,q.s,LOW,wallTop,mW,TH);if(q.e>s0){emit(g,s0,q.e,q.b>0?LOW:Math.min(LOW,0),q.b>0?q.b:LOW===0?0:0,mW,TH);emit(g,s0,q.e,q.h,wallTop,mW,TH)}
-        if(q.o&&q.o.t==='win')emit(g,q.s,q.e,q.b,q.h,mGlass,0.03);
+        if(q.o&&q.o.t==='win')winMesh(g,q);
         else if(q.o&&!q.o.v){const ww=q.e-q.s,side=q.o.f?-1:1,H=at(g,q.o.h?q.e:q.s),nx=-H.uy*side,ny=H.ux*side,[X,Z]=P3(H.x+nx*ww/2,H.y+ny*ww/2);
-          mesh(new T.BoxGeometry(ww,q.h-0.05,0.04),mDoor,X,(q.h-0.05)/2,Z,-Math.atan2(ny,nx))}
+          const lf=mesh(boxM(ww-0.02,q.h-0.06,0.04),mDoor,X,(q.h-0.06)/2+0.01,Z,-Math.atan2(ny,nx));
+          [-1,1].forEach(sd=>{const hd=new T.Mesh(new T.BoxGeometry(0.12,0.02,0.02),mHandle);hd.position.set(ww/2-0.1,1.0-(q.h-0.06)/2-0.01,sd*0.04);hd.castShadow=true;lf.add(hd);
+            const rs=new T.Mesh(new T.CylinderGeometry(0.025,0.025,0.012,12),mHandle);rs.rotation.x=Math.PI/2;rs.position.set(ww/2-0.06,1.0-(q.h-0.06)/2-0.01,sd*0.026);lf.add(rs)});
+          doorFrame(g,q)}
+        else if(q.o)doorFrame(g,q)
         cur=Math.max(cur,q.e)});
       emit(g,cur,g.L,LOW,wallTop,mW,TH)});
     st.items.forEach(it=>{const c=Object.assign({},CAT[it.k],dimOf(it)),[x,z]=P3(it.x,it.y),gr=new T.Group();gr.position.set(x,lvAt(it.x,it.y),z);gr.rotation.y=-it.r*Math.PI/180;
-      const mat=new T.MeshStandardMaterial({color:c.c,roughness:0.7});
-      const add=(w,h,d,px,py,pz,m)=>{const bx=new T.Mesh(new T.BoxGeometry(w,h,d),m||mat);bx.position.set(px,py,pz);bx.castShadow=bx.receiveShadow=true;gr.add(bx)};
-      if(it.k==='planta'){const pot=new T.Mesh(new T.CylinderGeometry(0.18,0.14,0.35,16),mGold);pot.position.y=0.175;pot.castShadow=true;gr.add(pot);
-        const leaf=new T.Mesh(new T.SphereGeometry(0.3,16,12),mat);leaf.position.y=0.75;leaf.castShadow=true;gr.add(leaf)}
-      else if(it.k==='cama'){add(c.w,c.h,c.d,0,c.h/2,0);add(c.w,0.9,0.08,0,0.45,-c.d/2+0.04,mDoor);add(c.w*0.8,0.12,0.4,0,c.h+0.06,-c.d/2+0.35,new T.MeshStandardMaterial({color:0xFFFFFF}))}
-      else if(it.k==='sofa'){add(c.w,0.42,c.d,0,0.21,0);add(c.w,0.4,0.2,0,0.6,-c.d/2+0.1);add(0.18,0.25,c.d,-c.w/2+0.09,0.54,0);add(0.18,0.25,c.d,c.w/2-0.09,0.54,0)}
-      else if(it.k==='mesa'){add(c.w,0.05,c.d,0,c.h-0.025,0);[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>add(0.06,c.h-0.05,0.06,a*(c.w/2-0.06),(c.h-0.05)/2,b*(c.d/2-0.06)))}
-      else if(it.k==='silla'){add(c.w,0.05,c.d,0,0.45,0);add(c.w,0.45,0.05,0,0.7,-c.d/2+0.025);[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>add(0.04,0.43,0.04,a*(c.w/2-0.03),0.215,b*(c.d/2-0.03)))}
-      else add(c.w,c.h,c.d,0,c.h/2,0);
-      grp.add(gr)});
+      furn(it.k,c,gr);grp.add(gr)});
     (st.rails||[]).forEach(r=>railMesh(r.a,r.b,r.k,r.h||1));
     (st.balc||[]).forEach(b=>{const F=FLOORS[b.f]||FLOORS.ceramico,[X,Z]=P3((b.x0+b.x1)/2,(b.y0+b.y1)/2),W=b.x1-b.x0,D=b.y1-b.y0;
-      mesh(new T.BoxGeometry(W,0.12,D),new T.MeshStandardMaterial({color:new T.Color(F.c),roughness:0.8}),X,-0.05,Z);
+      mesh(new T.BoxGeometry(W,0.12,D),MSM({color:new T.Color(F.c),roughness:0.8}),X,-0.05,Z);
       const E=balcEdges(b);if(b.rk!=='ninguna')E.filter(e=>e.free).forEach(e=>railMesh(e.a,e.b,b.rk,b.h||1));
       if(b.roof){const H=WHf();mesh(new T.BoxGeometry(W+0.1,0.12,D+0.1),mWallOf(WALLC[0][0]),X,H+0.06,Z);
         [[b.x0,b.y0],[b.x1,b.y0],[b.x1,b.y1],[b.x0,b.y1]].forEach(p=>{if(st.walls.some(w=>proj(geo(w),p).d<0.25))return;const [px,pz]=P3(p[0]+(p[0]===b.x0?0.08:-0.08),p[1]+(p[1]===b.y0?0.08:-0.08));
           mesh(new T.BoxGeometry(0.15,H,0.15),mWallOf(WALLC[0][0]),px,H/2,pz)})}});
     (st.roofs||[]).forEach(r=>roofMesh(r));
     (st.stairs||[]).forEach(s2=>stairMesh(s2,stairGeo(s2,stairRise(fi))))};
-  const mStep=new T.MeshStandardMaterial({color:0xC9C3B4,roughness:0.75});
+  const mStep=MSM({color:0xC9C3B4,roughness:0.75});
   function railSlope(p0,p1,y0,y1,k,h){const L=Math.hypot(p1[0]-p0[0],p1[1]-p0[1]);if(L<0.02)return;const ang=Math.atan2(p1[1]-p0[1],p1[0]-p0[0]),gr=new T.Group(),[X,Z]=P3(p0[0],p0[1]);gr.position.set(X,0,Z);gr.rotation.y=-ang;
     const pm=k==='madera'?mWood:k==='cables'||k==='vidrio'?mSteel:mMetal,yAt=t=>y0+(y1-y0)*t/L,sl=Math.atan2(y1-y0,L),len=Math.hypot(L,y1-y0);
     const add=(w,hh,d,x,y,m,rz)=>{const bx=new T.Mesh(new T.BoxGeometry(w,hh,d),m);bx.position.set(x,y,0);if(rz)bx.rotation.z=rz;bx.castShadow=true;gr.add(bx)};
@@ -937,16 +1103,10 @@ if(window.THREE){
   /* techos */
   let roofOn=true;const roofParts=[];
   const texCache={};
-  function roofTex(m){if(texCache[m])return texCache[m];const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');
-    if(m==='chapa'){for(let i=0;i<256;i++){const v=150+60*Math.sin(i/256*Math.PI*2*13);x.fillStyle=`rgb(${v-8},${v},${v+6})`;x.fillRect(i,0,1,256)}}
-    else if(m==='teja'){x.fillStyle='#A9502C';x.fillRect(0,0,256,256);for(let r=0;r<3;r++){const y0=r*85;for(let k=-1;k<6;k++){const cx=k*51+(r%2?25:0),g=x.createLinearGradient(cx-25,0,cx+25,0);
-        g.addColorStop(0,'#7E3A1E');g.addColorStop(0.5,'#C8673A');g.addColorStop(1,'#7E3A1E');x.fillStyle=g;x.fillRect(cx-25,y0,50,85)}x.fillStyle='rgba(40,15,5,.55)';x.fillRect(0,y0+80,256,5)}}
-    else if(m==='madera'){x.fillStyle='#8A6440';x.fillRect(0,0,256,256);for(let i=0;i<256;i+=32){x.fillStyle='rgba(60,38,20,.6)';x.fillRect(0,i,256,2);x.fillStyle='rgba(255,230,190,.08)';x.fillRect(0,i+6,256,10)}}
-    else if(m==='ladrillo'){x.fillStyle='#D8CBB5';x.fillRect(0,0,256,256);for(let r=0;r<15;r++){const y=r*17;for(let k=-1;k<5;k++){const xx=k*64+(r%2?32:0);x.fillStyle=['#A3522F','#9A4A29','#AC5B34'][(r+k+9)%3];x.fillRect(xx+2,y+2,60,14)}}}
-    else{x.fillStyle='#CFCAC0';x.fillRect(0,0,256,256);for(let i=0;i<600;i++){x.fillStyle=`rgba(0,0,0,${Math.random()*0.06})`;x.fillRect(Math.random()*256,Math.random()*256,2,2)}}
-    const t=new T.CanvasTexture(c);t.wrapS=t.wrapT=T.RepeatWrapping;t.anisotropy=4;return texCache[m]=t}
-  const roofMat=(m,rep2)=>{let t=roofTex(m);if(rep2){t=t.clone();t.needsUpdate=true;t.repeat.set(rep2[0],rep2[1])}
-    return new T.MeshStandardMaterial({map:t,side:T.DoubleSide,roughness:m==='chapa'?0.45:0.85,metalness:m==='chapa'?0.35:0})};
+  const ROOFTX={chapa:'chapa',teja:'teja',madera:'maderaTecho',ladrillo:'ladrillo',losa:'losa'};
+  const roofMat=(m,rep2)=>{const t=genTex(ROOFTX[m]||'losa');let map=t.map,nm=t.normal;
+    if(rep2){map=map.clone();map.needsUpdate=true;map.repeat.set(rep2[0]/t.rep,rep2[1]/t.rep);nm=nm.clone();nm.needsUpdate=true}
+    return MSM({map,normalMap:nm,normalScale:new T.Vector2(0.8,0.8),side:T.DoubleSide,roughness:t.rough,metalness:m==='chapa'?0.45:0})};
   function surf(faces,mat){const pos=[],uv=[];faces.forEach(f=>{for(let i=1;i<f.length-1;i++)[f[0],f[i],f[i+1]].forEach(v=>{const [X,Z]=P3(v[0],v[1]);pos.push(X,v[2],Z);uv.push(v[3]||0,v[4]||0)})});
     const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.computeVertexNormals();
     const m=new T.Mesh(g,mat);m.castShadow=m.receiveShadow=true;m.visible=roofOn;grp.add(m);roofParts.push(m);return m}
@@ -982,8 +1142,8 @@ if(window.THREE){
       m.material.side=T.DoubleSide;const [X,Z]=P3((r.x0+r.x1)/2,(r.y0+r.y1)/2);m.scale.set(W/2+e,h,D/2+e);m.position.set(X,Hb,Z);m.castShadow=m.receiveShadow=true;m.visible=roofOn;grp.add(m);roofParts.push(m)}}
   $('#allb').onclick=()=>{showAll=!showAll;$('#allb').classList.toggle('on',showAll);build()};
   $('#roofb').onclick=()=>{roofOn=!roofOn;$('#roofb').classList.toggle('on',roofOn);roofParts.forEach(c=>{c.visible=roofOn})};
-  const mMetal=new T.MeshStandardMaterial({color:0x2B2B2D,metalness:0.6,roughness:0.4}),mSteel=new T.MeshStandardMaterial({color:0xC9CCD1,metalness:0.8,roughness:0.25}),
-    mWood=new T.MeshStandardMaterial({color:0x8A6440,roughness:0.7}),mRailGlass=new T.MeshStandardMaterial({color:0x9FE7F2,transparent:true,opacity:0.3});
+  const mMetal=MSM({color:0x2B2B2D,metalness:0.6,roughness:0.4}),mSteel=MSM({color:0xC9CCD1,metalness:0.8,roughness:0.25}),
+    mWood=MSM({color:0x8A6440,roughness:0.7}),mRailGlass=MSM({color:0x9FE7F2,transparent:true,opacity:0.3});
   function railMesh(a,b,k,h){const L=Math.hypot(b[0]-a[0],b[1]-a[1]);if(L<0.05)return;const ang=Math.atan2(b[1]-a[1],b[0]-a[0]),gr=new T.Group(),[X,Z]=P3(a[0],a[1]);gr.position.set(X,0,Z);gr.rotation.y=-ang;
     const add=(w,hh,d,x,y,m)=>{const bx=new T.Mesh(new T.BoxGeometry(w,hh,d),m);bx.position.set(x,y,0);bx.castShadow=true;gr.add(bx)};
     if(k==='muro'){add(L,h,0.12,L/2,h/2,mWallOf(WALLC[0][0]));add(L+0.04,0.04,0.16,L/2,h+0.02,mWallOf(WALLC[2][0]))}
@@ -1036,7 +1196,7 @@ if(window.THREE){
   $('#fs').onclick=()=>{try{const p=document.fullscreenElement?document.exitFullscreen():box3.requestFullscreen();if(p&&p.catch)p.catch(()=>flash('Este navegador no permite pantalla completa acá.'))}catch(e){flash('Este navegador no permite pantalla completa acá.')}};
   const rs=()=>{const r=box3.getBoundingClientRect();ren.setSize(r.width,r.height,false);cam.aspect=r.width/Math.max(1,r.height);cam.updateProjectionMatrix()};
   const ro3=new ResizeObserver(rs);ro3.observe(box3);
-  function place(dt){if(walk){let f=-joyV[1]+((keys.w||keys.ArrowUp)?1:0)-((keys.s||keys.ArrowDown)?1:0),s=joyV[0]+(keys.d?1:0)-(keys.a?1:0);
+  function place(dt){if(TOUR.on){tourPlace(dt);return}if(walk){let f=-joyV[1]+((keys.w||keys.ArrowUp)?1:0)-((keys.s||keys.ArrowDown)?1:0),s=joyV[0]+(keys.d?1:0)-(keys.a?1:0);
       if(keys.ArrowLeft)walk.yaw-=1.6*dt;if(keys.ArrowRight)walk.yaw+=1.6*dt;
       const cy=Math.cos(walk.yaw),sy=Math.sin(walk.yaw),sp=1.5*dt,mx=(cy*f-sy*s)*sp,my=(sy*f+cy*s)*sp;
       if(mx||my){if(!blocked(walk.x+mx,walk.y+my)){walk.x+=mx;walk.y+=my}else if(!blocked(walk.x+mx,walk.y))walk.x+=mx;else if(!blocked(walk.x,walk.y+my))walk.y+=my}
@@ -1049,8 +1209,145 @@ if(window.THREE){
       const target=walkY();camY+=(target-camY)*Math.min(1,dt*6||1);if(st.fls&&WK.wf!==walk.wf){WK.wf=walk.wf;hint('Recorrido: estás en «'+st.fls[walk.wf].n+'».')}
       const [X,Z]=P3(walk.x,walk.y);cam.position.set(X,camY,Z);cam.lookAt(X+cy*Math.cos(walk.pitch),camY+Math.sin(walk.pitch),Z+sy*Math.cos(walk.pitch));return}
     cam.position.set(rad*Math.sin(ph)*Math.sin(th),rad*Math.cos(ph),rad*Math.sin(ph)*Math.cos(th));cam.lookAt(0,0,0)}
+  /* ---------- recorrido automático: entra por la puerta, pasa por cada ambiente, sube la escalera, sale al balcón ---------- */
+  const TOUR={on:false,play:false,t:0,frames:null,fps:30,rec:false};
+  const CELL=0.15,EYE=1.6;
+  function floorGrid(fi){return withFloor(fi,()=>{const R=RM,b=bbox();if(!b)return null;
+    const gx0=b.x0-4,gy0=b.y0-4,gw=Math.ceil((b.x1-b.x0+8)/CELL),gh=Math.ceil((b.y1-b.y0+8)/CELL),N=gw*gh,blk=new Uint8Array(N),inside=new Uint8Array(N),lv=new Float32Array(N),own=new Int16Array(N).fill(-1);
+    const ground=fi===(st.pb||0),cellC=k=>[gx0+(k%gw+0.5)*CELL,gy0+(Math.floor(k/gw)+0.5)*CELL];
+    const rAt=p=>{if(!R)return{o:-1,out:true,wall:false};const ix=Math.floor((p[0]-R.x0)/R.res),iy=Math.floor((p[1]-R.y0)/R.res);if(ix<0||iy<0||ix>=R.nx||iy>=R.ny)return{o:-1,out:true,wall:false};
+      const k=iy*R.nx+ix,o=R.owner[k];return{o:o>=0&&R.info[o]&&R.info[o].ok?o:-1,out:!!R.out[k],wall:!!(R.wall&&R.wall[k])}};
+    const inBal=p=>(st.balc||[]).some(q=>p[0]>q.x0+0.15&&p[0]<q.x1-0.15&&p[1]>q.y0+0.15&&p[1]<q.y1-0.15);
+    for(let k=0;k<N;k++){const p=cellC(k),r=rAt(p);own[k]=r.o;if(r.o>=0)lv[k]=st.rooms[r.o].lv||0;
+      if(!r.out&&!r.wall)inside[k]=1;
+      blk[k]=r.wall?1:(r.out?(ground?0:(inBal(p)?0:1)):0)}
+    const segBlock=(a,c,rad)=>{for(let k=0;k<N;k++){if(blk[k])continue;const p=cellC(k);if(proj(geo({a,b:c}),p).d<rad)blk[k]=2}};
+    // paredes engordadas (el cuerpo no roza), muebles y barandas
+    const wb=new Uint8Array(blk);for(let k=0;k<N;k++)if(wb[k]===1){const x=k%gw,y=(k-x)/gw;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<gw&&yy<gh&&!blk[yy*gw+xx])blk[yy*gw+xx]=3}}
+    st.items.forEach(it=>{const c=Object.assign({},CAT[it.k],dimOf(it)),a=it.r*Math.PI/180,ca=Math.cos(a),sa=Math.sin(a);if(it.k==='planta'||it.k==='ducha')return;
+      for(let k=0;k<N;k++){const p=cellC(k),dx=p[0]-it.x,dy=p[1]-it.y,lx=dx*ca+dy*sa,ly=-dx*sa+dy*ca;if(Math.abs(lx)<c.w/2+0.12&&Math.abs(ly)<c.d/2+0.12&&!blk[k])blk[k]=4}});
+    (st.rails||[]).forEach(r=>{if(r.k!=='ninguna')segBlock(r.a,r.b,0.25)});(st.balc||[]).forEach(q=>balcEdges(q).filter(e=>e.free).forEach(e=>segBlock(e.a,e.b,0.35)));
+    // huecos de escalera de la planta de abajo y escaleras propias
+    const below=st.fls&&st.fls[fi-1]?(st.fls[fi-1].stairs||[]):[];below.forEach(s2=>{const G2=stairGeo(s2,stairRise(fi-1));for(let k=0;k<N;k++)if(G2.prog(cellC(k))!=null&&!blk[k])blk[k]=5});
+    (st.stairs||[]).forEach(s2=>{const G2=stairGeo(s2,stairRise(fi));for(let k=0;k<N;k++){const p=cellC(k);if(G2.prog(p)!=null)blk[k]=6}});
+    // puertas y vanos: se abre el paso (también por encima del engorde de las paredes)
+    const doors=[];st.walls.forEach(w=>{const g=geo(w);w.o.forEach(o=>{if(o.t!=='door')return;const m=at(g,o.p),hw=ow(o)/2-0.08,n=[-m.uy,m.ux];
+      for(let k=0;k<N;k++){const p=cellC(k),dx=p[0]-m.x,dy=p[1]-m.y,t=dx*m.ux+dy*m.uy,s=dx*n[0]+dy*n[1];if(Math.abs(t)<=hw&&Math.abs(s)<=0.45&&blk[k]!==6&&blk[k]!==5)blk[k]=0}
+      const side=sg=>{const p=[m.x+n[0]*0.6*sg,m.y+n[1]*0.6*sg],r=rAt(p);return{p,o:r.o,out:r.out}};doors.push({m,n,w:ow(o),A:side(1),B:side(-1)})})});
+    // distancia a lo bloqueado: para elegir el lugar más despejado de cada ambiente
+    const dist=new Float32Array(N).fill(1e9),q=[];for(let k=0;k<N;k++)if(blk[k]){dist[k]=0;q.push(k)}
+    for(let h=0;h<q.length;h++){const k=q[h],x=k%gw;[[x>0,k-1],[x<gw-1,k+1],[k>=gw,k-gw],[k<N-gw,k+gw]].forEach(([ok,j])=>{if(ok&&dist[j]>dist[k]+1){dist[j]=dist[k]+1;q.push(j)}})}
+    const view=st.rooms.map((r,i)=>{if(!R||!R.info[i]||!R.info[i].ok)return null;let best=-1,bd=-1;const c=[R.info[i].cx,R.info[i].cy];
+      for(let k=0;k<N;k++)if(own[k]===i&&!blk[k]){const p=cellC(k),sc=Math.min(dist[k],8)-Math.hypot(p[0]-c[0],p[1]-c[1])*0.8;if(sc>bd){bd=sc;best=k}}
+      return best<0?null:{p:cellC(best),n:r.n,area:R.info[i].area}});
+    return{fi,gx0,gy0,gw,gh,N,blk,own,lv,view,doors,rooms:st.rooms.map(r=>({n:r.n})),stairs:(st.stairs||[]).map(s2=>stairGeo(s2,stairRise(fi))),balc:(st.balc||[]).slice(),R,
+      idx:p=>{const x=Math.floor((p[0]-gx0)/CELL),y=Math.floor((p[1]-gy0)/CELL);return x<0||y<0||x>=gw||y>=gh?-1:y*gw+x},cellC,
+      lvAt:p=>{const x=Math.floor((p[0]-gx0)/CELL),y=Math.floor((p[1]-gy0)/CELL);return x<0||y<0||x>=gw||y>=gh?0:lv[y*gw+x]},
+      roomAt:p=>{const x=Math.floor((p[0]-gx0)/CELL),y=Math.floor((p[1]-gy0)/CELL);return x<0||y<0||x>=gw||y>=gh?-1:own[y*gw+x]}}})}
+  function nearFree(G,p){let k=G.idx(p);if(k>=0&&!G.blk[k])return k;let best=-1,bd=1e9;for(let j=0;j<G.N;j++)if(!G.blk[j]){const c=G.cellC(j),d=Math.hypot(c[0]-p[0],c[1]-p[1]);if(d<bd){bd=d;best=j}}return bd<1.5?best:-1}
+  function bfs(G,s){const D=new Int32Array(G.N).fill(-1),P=new Int32Array(G.N).fill(-1),q=[s];D[s]=0;
+    const gw=G.gw;for(let h=0;h<q.length;h++){const k=q[h],x=k%gw,y=(k-x)/gw;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){if(!dx&&!dy)continue;const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=gw||yy>=G.gh)continue;const j=yy*gw+xx;
+      if(G.blk[j]||D[j]>=0)continue;if(dx&&dy&&(G.blk[y*gw+xx]||G.blk[yy*gw+x]))continue;D[j]=D[k]+1;P[j]=k;q.push(j)}}return{D,P}}
+  function losFree(G,a,b){const n=Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/(CELL*0.5));for(let i=0;i<=n;i++){const t=i/n,k=G.idx([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]);if(k<0||G.blk[k])return false}return true}
+  function pathTo(G,from,to){const s=nearFree(G,from),e=nearFree(G,to);if(s<0||e<0)return null;const{D,P}=bfs(G,s);if(D[e]<0)return null;
+    const cells=[];for(let k=e;k>=0;k=P[k])cells.push(G.cellC(k));cells.reverse();cells[0]=from;
+    const out=[cells[0]];let i=0;while(i<cells.length-1){let j=cells.length-1;while(j>i+1&&!losFree(G,cells[i],cells[j]))j--;out.push(cells[j]);i=j}return out}
+  // curva suave por los puntos, con muestras cada "step" metros
+  function smoothPath(pts,step){if(pts.length<2)return pts.slice();const P=[pts[0]].concat(pts,[pts[pts.length-1]]),out=[];
+    for(let i=1;i<P.length-2;i++){const p0=P[i-1],p1=P[i],p2=P[i+1],p3=P[i+2],L=Math.hypot(p2[0]-p1[0],p2[1]-p1[1]),n=Math.max(1,Math.ceil(L/step));
+      for(let k=0;k<n;k++){const t=k/n,t2=t*t,t3=t2*t,f=(a,b,c,d)=>0.5*(2*b+(-a+c)*t+(2*a-5*b+4*c-d)*t2+(-a+3*b-3*c+d)*t3);out.push([f(p0[0],p1[0],p2[0],p3[0]),f(p0[1],p1[1],p2[1],p3[1])])}}
+    out.push(pts[pts.length-1]);return out}
+  const ease=t=>t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2,angW=a=>Math.atan2(Math.sin(a),Math.cos(a));
+  function buildTour(){if(!st.walls.length)return null;const F=st.fls?st.fls.length:1,pb=st.pb||0,Gs=[];for(let i=0;i<F;i++)Gs[i]=floorGrid(i);
+    const fr=[],fps=TOUR.fps,vel=1.25,dtS=vel/fps,LIMIT=fps*150;let pose=null;
+    const camFrom=()=>{const s=Math.sin(ph);return{p:[rad*s*Math.sin(th),rad*Math.cos(ph),rad*s*Math.cos(th)],t:[0,0,0],fov:45}};
+    const eye=(fi,p,yaw,pitch)=>{const z=zOf(fi)+Gs[fi].lvAt(p)+EYE,[X,Z]=P3(p[0],p[1]),c=Math.cos(pitch||0);return{p:[X,z,Z],t:[X+Math.cos(yaw)*c,z+Math.sin(pitch||0),Z+Math.sin(yaw)*c],fov:68}};
+    const push=(P,label,fi)=>{if(fr.length<LIMIT){fr.push({p:P.p.slice(),t:P.t.slice(),fov:P.fov,label:label||'',fi});pose=P}};
+    const fly=(A,B,dur,label,fi)=>{const n=Math.round(dur*fps);for(let i=1;i<=n;i++){const e=ease(i/n),L=(a,b)=>a.map((v,j)=>v+(b[j]-v)*e);push({p:L(A.p,B.p),t:L(A.t,B.t),fov:A.fov+(B.fov-A.fov)*e},label,fi)}};
+    let yawNow=0,pitchNow=0;
+    const walk=(fi,pts,label)=>{const sm=smoothPath(pts,0.25);if(sm.length<2)return;const cum=[0];for(let i=1;i<sm.length;i++)cum.push(cum[i-1]+Math.hypot(sm[i][0]-sm[i-1][0],sm[i][1]-sm[i-1][1]));
+      const L=cum[cum.length-1],n=Math.max(2,Math.round(L/dtS)),at2=d=>{let i=1;while(i<cum.length-1&&cum[i]<d)i++;const t=(d-cum[i-1])/Math.max(1e-6,cum[i]-cum[i-1]);return[sm[i-1][0]+(sm[i][0]-sm[i-1][0])*t,sm[i-1][1]+(sm[i][1]-sm[i-1][1])*t]};
+      let z=null;for(let i=1;i<=n;i++){const d=L*i/n,p=at2(d),q=at2(Math.min(L,d+0.9)),dir=Math.hypot(q[0]-p[0],q[1]-p[1])>0.05?Math.atan2(q[1]-p[1],q[0]-p[0]):yawNow;
+        yawNow+=angW(dir-yawNow)*0.12;pitchNow+=(0-pitchNow)*0.1;const E=eye(fi,p,yawNow,pitchNow);if(z==null)z=E.p[1];z+=(E.p[1]-z)*0.18;const dz=z-E.p[1];E.p[1]=z;E.t[1]+=dz;
+        const ri=Gs[fi].roomAt(p);push(E,ri>=0?roomLabel(Gs[fi],ri):label,fi)}};
+    const roomLabel=(G,i)=>{const v=G.view[i];return v?v.n+' · '+v.area.toFixed(1).replace('.',',')+' m²':G.rooms[i].n};
+    const look=(fi,p,sweep,dur,label,pitch)=>{const n=Math.round(dur*fps),y0=yawNow;for(let i=1;i<=n;i++){const e=ease(i/n);yawNow=y0+sweep*e;pitchNow+=((pitch||-0.05)-pitchNow)*0.08;push(eye(fi,p,yawNow,pitchNow),label,fi)}};
+    let posF=pb,pos=null;
+    // entrada: la puerta de la planta baja que da afuera
+    const G0=Gs[pb];if(!G0)return null;let entry=null;G0.doors.forEach(d=>{const o=d.A.out&&!d.B.out?{out:d.A,inn:d.B,sg:1}:d.B.out&&!d.A.out?{out:d.B,inn:d.A,sg:-1}:null;if(o&&!entry)entry={d,o}});
+    const start=camFrom();
+    if(entry){const{d,o}=entry,away=[o.out.p[0]+d.n[0]*o.sg*3.2,o.out.p[1]+d.n[1]*o.sg*3.2];pos=away;yawNow=Math.atan2(d.m.y-away[1],d.m.x-away[0]);pitchNow=0.02;
+      fly(start,eye(pb,away,yawNow,0.02),4,'',pb);look(pb,away,0,0.8,'',0.02);walk(pb,[away,o.out.p,[d.m.x,d.m.y],o.inn.p],'Entrada');pos=o.inn.p}
+    else{const v=G0.view.find(Boolean);if(!v)return null;pos=v.p;yawNow=0;fly(start,eye(pb,pos,0,0),4,'',pb)}
+    // recorrer los ambientes de una planta en el orden más corto
+    const visitFloor=(fi,endAt)=>{const G=Gs[fi];const left=G.view.map((v,i)=>v?i:-1).filter(i=>i>=0);
+      while(left.length&&fr.length<LIMIT){const s=nearFree(G,pos);if(s<0)break;const{D}=bfs(G,s);let bi=-1,bd=1e9;
+        left.forEach((i,j)=>{const k=nearFree(G,G.view[i].p),dd=k>=0&&D[k]>=0?D[k]:1e8;if(dd<bd){bd=dd;bi=j}});if(bi<0||bd>=1e8)break;
+        const i=left.splice(bi,1)[0],v=G.view[i],path=pathTo(G,pos,v.p);if(path){walk(fi,path,roomLabel(G,i));pos=v.p}
+        const ar=v.area||8;look(fi,pos,(fr.length/fps%2<1?1:-1)*Math.PI*(ar<5?0.7:0.95),Math.max(2.2,Math.min(3.6,2+ar/10)),roomLabel(G,i))}
+      // balcón
+      G.balc.forEach(b=>{if(fr.length>=LIMIT)return;const E=balcEdges(b).filter(e=>e.free);if(!E.length)return;const e=E.reduce((a,c)=>Math.hypot(c.b[0]-c.a[0],c.b[1]-c.a[1])>Math.hypot(a.b[0]-a.a[0],a.b[1]-a.a[1])?c:a),
+        m=[(e.a[0]+e.b[0])/2,(e.a[1]+e.b[1])/2],cx=(b.x0+b.x1)/2,cy=(b.y0+b.y1)/2,dl=Math.hypot(m[0]-cx,m[1]-cy)||1,tgt=[m[0]-(m[0]-cx)/dl*0.55,m[1]-(m[1]-cy)/dl*0.55],path=pathTo(G,pos,tgt);
+        if(!path)return;walk(fi,path,'Balcón');pos=tgt;const out=Math.atan2(m[1]-cy,m[0]-cx);const turn=angW(out-yawNow);look(fi,pos,turn,1.6,'Balcón',-0.12);look(fi,pos,-1.1,2.6,'Balcón',-0.05);look(fi,pos,2.2,4,'Balcón',-0.05);
+        const back=pathTo(G,pos,G.view.find(Boolean)?G.view.find(Boolean).p:pos);if(back&&endAt){walk(fi,back.slice(0,Math.max(2,Math.ceil(back.length/2))),'');pos=back[Math.max(1,Math.ceil(back.length/2)-1)]}});
+      if(endAt){const path=pathTo(G,pos,endAt);if(path){walk(fi,path,'Escalera');pos=endAt}}};
+    // escalera hacia arriba: se recorre por el centro de los escalones
+    const stairUp=fi=>{const G=Gs[fi];if(!G||!G.stairs.length||!Gs[fi+1])return false;const S2=G.stairs[0],z0=zOf(fi),stp=S2.steps;
+      const first=stp[0],d0=[Math.cos(first.ang),Math.sin(first.ang)],foot=[first.o[0]-d0[0]*0.7,first.o[1]-d0[1]*0.7];
+      visitFloor(fi,foot);const last=stp[stp.length-1],dl=[Math.cos(last.ang),Math.sin(last.ang)],top=[last.o[0]+dl[0]*0.7,last.o[1]+dl[1]*0.7];
+      const pts=[foot].concat(stp.map(q=>q.o),[top]),hs=[0].concat(stp.map(q=>q.top),[S2.rise]);let cum=[0];for(let i=1;i<pts.length;i++)cum.push(cum[i-1]+Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]));
+      const L=cum[cum.length-1],n=Math.max(2,Math.round(L/(dtS*0.75)));let z=pose?pose.p[1]:z0+EYE;
+      for(let i=1;i<=n;i++){const dd=L*i/n;let j=1;while(j<cum.length-1&&cum[j]<dd)j++;const t=(dd-cum[j-1])/Math.max(1e-6,cum[j]-cum[j-1]),p=[pts[j-1][0]+(pts[j][0]-pts[j-1][0])*t,pts[j-1][1]+(pts[j][1]-pts[j-1][1])*t],
+        hh=hs[j-1]+(hs[j]-hs[j-1])*t,ahead=pts[Math.min(pts.length-1,j+1)],dir=Math.atan2(ahead[1]-p[1],ahead[0]-p[0]);yawNow+=angW(dir-yawNow)*0.15;pitchNow+=((i<n*0.85?0.12:0)-pitchNow)*0.08;
+        const[X,Z]=P3(p[0],p[1]),tz=z0+hh+EYE;z+=(tz-z)*0.25;const c=Math.cos(pitchNow);push({p:[X,z,Z],t:[X+Math.cos(yawNow)*c,z+Math.sin(pitchNow),Z+Math.sin(yawNow)*c],fov:68},'Escalera',i<n*0.6?fi:fi+1)}
+      pos=top;return true};
+    let fi=pb;while(fi<F&&fr.length<LIMIT){const up=stairUp(fi);if(!up){visitFloor(fi,null);break}fi++}
+    // salida: la cámara sube y muestra la casa desde afuera, girando
+    if(pose){const r2=rad*1.05,ph2=0.95,th0=Math.atan2(pose.p[0],pose.p[2]),endP=a=>({p:[r2*Math.sin(ph2)*Math.sin(a),r2*Math.cos(ph2),r2*Math.sin(ph2)*Math.cos(a)],t:[0,0.6,0],fov:45});
+      fly(pose,endP(th0),3.5,'',fi);const n=Math.round(5*fps);for(let i=1;i<=n;i++)push(endP(th0+0.9*ease(i/n)),'',fi)}
+    return fr}
+  // interfaz del recorrido
+  const tb=document.createElement('div');tb.className='tourbar';tb.innerHTML='<div class="tl" aria-live="polite"></div><div class="tp"><i></i></div><div class="tbt"><button id="tpause">Pausa</button><button id="tstop">Salir</button></div>';box3.appendChild(tb);
+  const tl=tb.querySelector('.tl'),tpi=tb.querySelector('.tp i');let lastLbl='',showAll0=false,lastPlanDraw=0;
+  function tourStart(){if(walk)setWalk(false);showAll0=showAll;if(!showAll){showAll=true;build()}const f=buildTour();if(!f||f.length<10){flash('Para el recorrido hacen falta paredes, una puerta de entrada y ambientes con nombre.');if(!showAll0){showAll=false;build()}return false}
+    TOUR.frames=f;TOUR.t=0;TOUR.on=true;TOUR.play=true;box3.classList.add('touring');document.body.classList.add('touring');$('#tpause').textContent='Pausa';lastLbl='';return true}
+  function tourStop(){TOUR.on=false;TOUR.play=false;box3.classList.remove('touring');document.body.classList.remove('touring');cam.fov=45;cam.updateProjectionMatrix();if(!showAll0&&showAll){showAll=false;build()}WK.on=false;draw()}
+  window.__p3dTour=()=>tourStart();
+  window.__p3dTourInfo=()=>TOUR.frames?{n:TOUR.frames.length,seg:TOUR.frames.reduce((a,f,i)=>{const k=f.label+'@'+f.fi;if(!a.length||a[a.length-1].k!==k)a.push({k,i});return a},[])}:null;
+  window.__p3dTourSeek=s2=>{TOUR.t=s2};
+  $('#tpause').onclick=()=>{TOUR.play=!TOUR.play;$('#tpause').textContent=TOUR.play?'Pausa':'Seguir'};$('#tstop').onclick=tourStop;
+  function tourFrame(i){const f=TOUR.frames[Math.max(0,Math.min(TOUR.frames.length-1,i))];cam.position.set(f.p[0],f.p[1],f.p[2]);cam.lookAt(f.t[0],f.t[1],f.t[2]);if(Math.abs(cam.fov-f.fov)>0.01){cam.fov=f.fov;cam.updateProjectionMatrix()}return f}
+  function tourPlace(dt){if(TOUR.play)TOUR.t+=dt;const i=Math.floor(TOUR.t*TOUR.fps),n=TOUR.frames.length;if(i>=n){tourStop();return}
+    const f=tourFrame(i);if(f.label!==lastLbl){lastLbl=f.label;tl.textContent=f.label;tl.classList.toggle('show',!!f.label)}tpi.style.width=(i/n*100).toFixed(1)+'%';
+    const now=performance.now();if(now-lastPlanDraw>200&&f.fov>60){lastPlanDraw=now;const lx=f.p[0]+OFF[0],ly=f.p[2]+OFF[1];Object.assign(WK,{on:true,x:lx,y:ly,yaw:Math.atan2(f.t[2]-f.p[2],f.t[0]-f.p[0]),hf:1.2,trail:[]});draw()}}
+  // video del recorrido: cuadro por cuadro, con el nombre de cada ambiente
+  function lblDraw(x,W,H,f,i,n,name){const s=W/1080;x.textBaseline='middle';
+    if(i<TOUR.fps*3){const a=i<TOUR.fps*2.4?1:Math.max(0,1-(i-TOUR.fps*2.4)/(TOUR.fps*0.6));x.globalAlpha=a;x.fillStyle='rgba(10,10,10,.45)';x.fillRect(0,H*0.38,W,H*0.24);x.fillStyle='#FFFFFF';x.textAlign='center';
+      x.font=`700 ${Math.round(64*s)}px Montserrat, sans-serif`;x.fillText(name,W/2,H*0.47);x.font=`500 ${Math.round(34*s)}px Montserrat, sans-serif`;x.fillText('Recorrido virtual',W/2,H*0.535);x.globalAlpha=1}
+    if(f.label){x.font=`700 ${Math.round(38*s)}px Montserrat, sans-serif`;x.textAlign='left';const tw=x.measureText(f.label).width,px=40*s,py=H-120*s,ph=72*s;
+      x.fillStyle='rgba(10,10,10,.55)';x.beginPath();x.roundRect?x.roundRect(px,py-ph/2,tw+56*s,ph,ph/2):x.rect(px,py-ph/2,tw+56*s,ph);x.fill();x.fillStyle='#FFFFFF';x.fillText(f.label,px+28*s,py+2*s)}
+    if(i>n-TOUR.fps*2.5){const a=Math.min(1,(i-(n-TOUR.fps*2.5))/(TOUR.fps*0.8));x.globalAlpha=a;x.fillStyle='rgba(10,10,10,.5)';x.fillRect(0,H*0.42,W,H*0.16);x.fillStyle='#FFFFFF';x.textAlign='center';
+      x.font=`700 ${Math.round(56*s)}px Montserrat, sans-serif`;x.fillText(name,W/2,H*0.5);x.globalAlpha=1}}
+  async function tourVideo(vertical,onProg){if(!tourStart())return null;TOUR.play=false;TOUR.rec=true;const hd=QLV!=='liviana',W=vertical?(hd?1080:720):(hd?1920:1280),H=vertical?(hd?1920:1280):(hd?1080:720),fps=TOUR.fps,n=TOUR.frames.length;
+    const pr0=ren.getPixelRatio();ren.setPixelRatio(1);ren.setSize(W,H,false);cam.aspect=W/H;cam.updateProjectionMatrix();const cv=document.createElement('canvas');cv.width=W;cv.height=H;const x=cv.getContext('2d'),name=cur.name||'Proyecto';
+    let out=null;const restore=()=>{TOUR.rec=false;ren.setPixelRatio(pr0);rs();tourStop()};
+    try{if(window.VideoEncoder&&window.Mp4Muxer){const sup=await VideoEncoder.isConfigSupported({codec:'avc1.640028',width:W,height:H,bitrate:8e6,framerate:fps}).catch(()=>({supported:false}));
+        const codec=sup.supported?'avc1.640028':'avc1.42003e';const mux=new Mp4Muxer.Muxer({target:new Mp4Muxer.ArrayBufferTarget(),video:{codec:'avc',width:W,height:H},fastStart:'in-memory'});
+        const enc=new VideoEncoder({output:(c,m)=>mux.addVideoChunk(c,m),error:e=>{throw e}});enc.configure({codec,width:W,height:H,bitrate:W*H>1e6?8e6:4.5e6,framerate:fps});
+        for(let i=0;i<n;i++){const f=tourFrame(i);ren.render(scene,cam);x.drawImage(ren.domElement,0,0,W,H);lblDraw(x,W,H,f,i,n,name);
+          const vf=new VideoFrame(cv,{timestamp:Math.round(i*1e6/fps),duration:Math.round(1e6/fps)});enc.encode(vf,{keyFrame:i%(fps*2)===0});vf.close();
+          if(enc.encodeQueueSize>8)await new Promise(r=>setTimeout(r,0));if(i%5===0){onProg&&onProg(i/n);await new Promise(r=>setTimeout(r,0))}}
+        await enc.flush();mux.finalize();out={blob:new Blob([mux.target.buffer],{type:'video/mp4'}),ext:'mp4'}}
+      else if(window.MediaRecorder&&cv.captureStream){const strm=cv.captureStream(fps),mt=['video/mp4;codecs=avc1','video/webm;codecs=vp9','video/webm'].find(t=>MediaRecorder.isTypeSupported(t))||'',rec=new MediaRecorder(strm,mt?{mimeType:mt,videoBitsPerSecond:6e6}:{}),ch=[];
+        rec.ondataavailable=e=>e.data.size&&ch.push(e.data);const done=new Promise(r=>rec.onstop=r);rec.start();
+        for(let i=0;i<n;i++){const t0=performance.now(),f=tourFrame(i);ren.render(scene,cam);x.drawImage(ren.domElement,0,0,W,H);lblDraw(x,W,H,f,i,n,name);onProg&&i%5===0&&onProg(i/n);
+          await new Promise(r=>setTimeout(r,Math.max(0,1000/fps-(performance.now()-t0))))}
+        rec.stop();await done;const ty=(mt||'video/webm').split(';')[0];out={blob:new Blob(ch,{type:ty}),ext:ty.includes('mp4')?'mp4':'webm'}}
+      else throw new Error('sin soporte')}
+    finally{restore()}return out}
+  window.__p3dTourVideo=tourVideo;
   let last=performance.now();
-  const loop=t=>{const dt=Math.min(0.05,(t-last)/1000);last=t;place(dt);ren.render(scene,cam);requestAnimationFrame(loop)};requestAnimationFrame(loop);
+  const loop=t=>{const dt=Math.min(0.05,(t-last)/1000);last=t;if(!TOUR.rec){place(dt);ren.render(scene,cam)}requestAnimationFrame(loop)};requestAnimationFrame(loop);
   shot3D=(w,h)=>{ren.setPixelRatio(1);ren.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();place(0);ren.render(scene,cam);
     const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(ren.domElement,0,0);ren.setPixelRatio(Math.min(2,devicePixelRatio||1));rs();return c};
 }else{$('#err').style.display='block';box3.style.display='none'}
@@ -1232,6 +1529,19 @@ window.P3D={onChange:null,
   let pt=0;const panOn=()=>{body.classList.add('panning');clearTimeout(pt)},panOff=()=>{clearTimeout(pt);pt=setTimeout(()=>body.classList.remove('panning'),180)};
   ['#plan','#v3'].forEach(s2=>{const el=$(s2);el.addEventListener('pointerdown',panOn,{passive:true});el.addEventListener('wheel',()=>{panOn();panOff()},{passive:true})});
   addEventListener('pointerup',panOff,{passive:true});addEventListener('pointercancel',panOff,{passive:true});
+  // recorrido automático y video
+  const goTour=()=>{if(!window.__p3dTour)return;menu(false);if(!wide.matches)setView('3d');setTimeout(()=>window.__p3dTour(),wide.matches?0:120)};
+  const tbtn=$('#tourb');if(tbtn)tbtn.onclick=goTour;$('#tourplay').onclick=goTour;
+  let vbusy=false;const vp=$('#vprog'),vpi=vp.querySelector('i'),vps=vp.querySelector('span');
+  const mkVid=async vert=>{if(vbusy||!window.__p3dTourVideo)return;vbusy=true;vp.hidden=false;vpi.style.width='0';vps.textContent='Generando video… 0 %';
+    try{await document.fonts.ready;const r=await window.__p3dTourVideo(vert,f=>{vpi.style.width=(f*100).toFixed(0)+'%';vps.textContent='Generando video… '+Math.round(f*100)+' %'});
+      if(!r){vp.hidden=true;return}vps.textContent='Video listo ('+(r.blob.size/1048576).toFixed(1).replace('.',',')+' MB).';await offer('recorrido-'+slugName()+'.'+r.ext,r.blob,null)}
+    catch(e){vps.textContent='No se pudo generar el video en este navegador. Probá desde Chrome en la computadora.'}finally{vbusy=false}};
+  $('#vidv').onclick=()=>mkVid(true);$('#vidh').onclick=()=>mkVid(false);
+  // calidad de la maqueta
+  let qs='auto';try{qs=localStorage.getItem('p3d-calidad')||'auto'}catch(e){}
+  const qsync=()=>{document.querySelectorAll('#qbar [data-q]').forEach(b=>b.classList.toggle('on',b.dataset.q===qs));$('#qnote').textContent=(qs==='auto'?'Ahora: '+({alta:'alta',media:'media',liviana:'liviana'}[window.__p3dCalidad]||'media')+', elegida según este equipo. ':'')+'El cambio se aplica la próxima vez que abras la app.'};
+  document.querySelectorAll('#qbar [data-q]').forEach(b=>b.onclick=()=>{qs=b.dataset.q;try{localStorage.setItem('p3d-calidad',qs)}catch(e){}qsync()});qsync();
   window.__p3dSub=syncSub;syncSub();
 })();
 const roP=new ResizeObserver(size);roP.observe(plan);
