@@ -115,6 +115,6 @@ La pantalla de ingreso muestra un solo botón dorado **Ingresar**. Al tocarlo, e
 
 ### Maqueta realista, recorrido automático y video (26/11/2026)
 - La maqueta 3D del plano ahora tiene sol con sombras, cielo, pasto, vereda y árboles; materiales con textura (porcelanato, madera, cerámico, revoque); marcos, vidrios y picaportes; muebles con detalle.
-- **Recorrido automático:** botón «Recorrido» en la barra de la maqueta. Entra por la puerta, pasa por cada ambiente, sube la escalera y sale al balcón. También funciona en el link público para clientes.
+- **Recorrido automático:** botón «Recorrido» en la barra de la maqueta. Entra por la puerta, pasa por cada ambiente (en cada uno gira 360°), sube la escalera y sale al balcón. También funciona en el link público para clientes.
 - **Video del recorrido:** menú ☰ → «Video del recorrido» → vertical u horizontal. Se descarga en MP4 para mandar por WhatsApp o subir a redes.
 

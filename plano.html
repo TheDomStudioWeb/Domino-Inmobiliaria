@@ -1284,7 +1284,7 @@ if(window.THREE){
       while(left.length&&fr.length<LIMIT){const s=nearFree(G,pos);if(s<0)break;const{D}=bfs(G,s);let bi=-1,bd=1e9;
         left.forEach((i,j)=>{const k=nearFree(G,G.view[i].p),dd=k>=0&&D[k]>=0?D[k]:1e8;if(dd<bd){bd=dd;bi=j}});if(bi<0||bd>=1e8)break;
         const i=left.splice(bi,1)[0],v=G.view[i],path=pathTo(G,pos,v.p);if(path){walk(fi,path,roomLabel(G,i));pos=v.p}
-        const ar=v.area||8;look(fi,pos,(fr.length/fps%2<1?1:-1)*Math.PI*(ar<5?0.7:0.95),Math.max(2.2,Math.min(3.6,2+ar/10)),roomLabel(G,i))}
+        const ar=v.area||8;look(fi,pos,(fr.length/fps%2<1?1:-1)*Math.PI*2,Math.max(4.5,Math.min(7,4+ar/8)),roomLabel(G,i))}
       // balcón
       G.balc.forEach(b=>{if(fr.length>=LIMIT)return;const E=balcEdges(b).filter(e=>e.free);if(!E.length)return;const e=E.reduce((a,c)=>Math.hypot(c.b[0]-c.a[0],c.b[1]-c.a[1])>Math.hypot(a.b[0]-a.a[0],a.b[1]-a.a[1])?c:a),
         m=[(e.a[0]+e.b[0])/2,(e.a[1]+e.b[1])/2],cx=(b.x0+b.x1)/2,cy=(b.y0+b.y1)/2,dl=Math.hypot(m[0]-cx,m[1]-cy)||1,tgt=[m[0]-(m[0]-cx)/dl*0.55,m[1]-(m[1]-cy)/dl*0.55],path=pathTo(G,pos,tgt);
