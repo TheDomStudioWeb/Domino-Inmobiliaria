@@ -84,3 +84,16 @@ La pantalla de ingreso muestra un solo botón dorado **Ingresar**. Al tocarlo, e
 - Funciona con el autocompletado de contraseñas del teléfono. Componente: `dom-login.js` (The DOM Studio Web).
 
 **Para responder por voz:** "¿Cómo entro?" → Tocá Ingresar, escribí tu correo y tu contraseña, y tocá la flecha.
+
+## Plano 3D de cada propiedad (26/11/2026)
+- Cada tarjeta de propiedad tiene el botón **«Plano 3D»** (para la Dirección) o **«Ver plano 3D»** (para Corredor y Gestor). Abre el editor DOMino Planos 3D con el plano de esa propiedad.
+- **Solo la Dirección** dibuja, guarda y publica. Corredor y Gestor lo ven en modo vista, y solo en las propiedades que ya ven en el panel.
+- El editor es el mismo de DOMino Planos 3D: paredes rectas y curvas, puertas y ventanas, ambientes con m² y piso, muebles, maqueta 3D con recorrido en primera persona, exportación a PDF o imagen y cálculo de obra gruesa (ladrillo tradicional, sin precios).
+- **Guardar plano:** queda en Firestore, en `negocios/{id}/planos/{id de la propiedad}`. Si hay cambios sin guardar, la página avisa antes de salir.
+- **Publicar para clientes:** crea un link público con un código al azar (`plano.html?t=…`) que se abre **sin ingresar**. El cliente ve el plano con la dirección y la operación, lo recorre en 3D, descarga el PDF (sin la hoja de obra gruesa) y tiene un botón para consultar por el WhatsApp de la inmobiliaria (el que está cargado en Configuración). Cada vez que la Dirección guarda, el link se actualiza. **«Dejar de publicar»** lo da de baja.
+- La copia pública vive en `planos_publicos/{código}`: se puede leer solo sabiendo el código (no se pueden listar) y solo la Dirección de esa inmobiliaria la crea, la cambia o la borra.
+- En la demostración, el plano se guarda en el propio teléfono y no se publican links.
+- La lectura de planos desde una foto con IA queda, por ahora, solo en la versión de claude.ai de DOMino Planos 3D.
+- Importante: las reglas nuevas (`planos` y `planos_publicos`) están en `firestore.rules`, pero hay que publicarlas a mano en la consola de Firebase (Firestore → Reglas), igual que las anteriores. Sin eso, guardar y publicar da error de permisos.
+
+**Para responder por voz:** "¿Cómo le hago el plano a una propiedad?" → En el panel, en la tarjeta de la propiedad, tocá «Plano 3D», dibujalo y tocá «Guardar plano». Para mandárselo a un cliente, tocá «Publicar para clientes» y enviá el link por WhatsApp.
