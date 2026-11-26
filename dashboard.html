@@ -149,6 +149,9 @@ async function pintar() {
     b.appendChild(panelFotos({ DI, ctx, p }));
     b.appendChild(panelSeg({ DI, item: p, update: (c) => ctx.actualizarProp(p.id, c), alTerminar: () => pintar() }));
     if (p.operacion === 'Alquiler' && p.alq_monto) b.appendChild(panelAjuste(p, { DI, ctx, alTerminar: () => pintar() }));
+    // Plano 3D de la propiedad: la Dirección lo dibuja y publica; el resto del equipo lo ve.
+    const pl = document.createElement('a'); pl.className = 'btn line sm'; pl.style.marginBottom = '8px'; pl.href = 'plano.html?p=' + encodeURIComponent(p.id);
+    pl.textContent = ctx.esSenior || ctx.demo ? 'Plano 3D' : 'Ver plano 3D'; b.appendChild(pl);
     const a = document.createElement('a'); a.className = 'btn ok'; a.target = '_blank'; a.rel = 'noopener';
     a.href = DI.wa('Hola' + (p.propietario ? ' ' + p.propietario : '') + ', te escribo desde ' + (ctx.demo ? 'DOMino Inmobiliaria' : ctx.nombre) + '. Reporte de tu propiedad «' + p.titulo + '»: ' + p.estado + '. ¡Seguimos avanzando!' + (ctx.firma ? '\n— ' + ctx.firma : ''), ctx.demo ? undefined : (p.propietario_tel || ''));
     a.innerHTML = WAI + 'Notificar al propietario';

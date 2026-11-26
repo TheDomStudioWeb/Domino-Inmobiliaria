@@ -87,6 +87,14 @@ service cloud.firestore {
         allow delete: if seniorDe(nid);
       }
 
+      // Plano 3D de cada propiedad (mismo id que la propiedad). Lo ve quien ve la propiedad; solo la Dirección lo guarda o lo borra.
+      match /planos/{id} {
+        function propPl() { return get(/databases/$(database)/documents/negocios/$(nid)/props/$(id)).data; }
+        allow read: if seniorDe(nid) || (personalDe(nid) && (propPl().get('creado_por', '') == mail() || propPl().get('asignado', '') == mail()));
+        allow create, update: if seniorDe(nid) && request.resource.data.data is string && request.resource.data.data.size() < 900000;
+        allow delete: if seniorDe(nid);
+      }
+
       // Consultas de personas interesadas: mismo criterio de visibilidad.
       match /leads/{id} {
         allow read: if seniorDe(nid) || (personalDe(nid) && (resource.data.creado_por == mail() || resource.data.asignado == mail()));
@@ -94,6 +102,16 @@ service cloud.firestore {
           && (seniorDe(nid) || request.resource.data.get('asignado', '') == mail());
         allow update, delete: if seniorDe(nid) || (personalDe(nid) && (resource.data.get('creado_por', '') == mail() || resource.data.get('asignado', '') == mail()));
       }
+    }
+
+    // ── Planos publicados para clientes ───────────────────────────
+    // Cualquiera con el link (código largo al azar) puede ver UN plano; no se pueden listar. Solo la Dirección de esa inmobiliaria publica o despublica.
+    match /planos_publicos/{t} {
+      allow get: if true;
+      allow create: if seniorDe(request.resource.data.negocio_id) && request.resource.data.data is string && request.resource.data.data.size() < 900000;
+      allow update: if seniorDe(resource.data.negocio_id) && request.resource.data.negocio_id == resource.data.negocio_id
+        && request.resource.data.data is string && request.resource.data.data.size() < 900000;
+      allow delete: if seniorDe(resource.data.negocio_id);
     }
 
     // ── Equipo ─────────────────────────────────────────────────────
