@@ -118,3 +118,7 @@ La pantalla de ingreso muestra un solo botón dorado **Ingresar**. Al tocarlo, e
 - **Recorrido automático:** botón «Recorrido» en la barra de la maqueta. Entra por la puerta, pasa por cada ambiente (en cada uno gira 360°), sube la escalera y sale al balcón. También funciona en el link público para clientes.
 - **Video del recorrido:** menú ☰ → «Video del recorrido» → vertical u horizontal. Se descarga en MP4 para mandar por WhatsApp o subir a redes.
 
+### Techos con la forma de la casa (27/11/2026)
+- «Techar toda la casa» sigue el contorno real de las paredes (casas en L, con alas a 45° o irregulares) y, si hay planta arriba, techa solo lo que queda descubierto abajo.
+- Con el techo seleccionado se mueven las esquinas, se agregan o borran puntos y se le da voladizo a cada borde (0 a 8 m), por ejemplo para una galería o cochera.
+
